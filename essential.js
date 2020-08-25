@@ -447,6 +447,10 @@ function navigatorName () {
 
 
 
+console.debug = console.log
+// console.debug = function (_) => { console.log(_); return _; }
+// function consDebug(_) { _ => { console.log(_); return _; }
+
 function consLog(what) { return data => { console.log(what+': ',data); return data; } }
 function consErr(what) { return err => { console.error(what+': ',err); return err; } }
 
