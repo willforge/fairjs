@@ -1,6 +1,6 @@
 // assumed api_url is already defined ...
 //
-// Version Gustave Nimant (dbug)
+// Branch: dbug
 
 
 var thisscript = document.currentScript
