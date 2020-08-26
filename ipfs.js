@@ -147,6 +147,15 @@ function ipfsNamePublish(k,v) {
     .catch(logError)
 }
 
+function ipfsAddBinaryContent(string) {
+   let [callee, caller] = functionNameJS(); // logInfo("message !")
+   console.debug(callee+'.input.string:',string);
+   url = api_url + 'add?file=content.txt&cid-version=0'
+   return fetchPostBinary(url,string)
+   .then( resp => resp.json() )
+   .then( json => json.Hash )
+   .catch(logError)
+}
 
 function ipfsAddBinaryFile(file) {
  return readAsBinaryString(file)
@@ -177,6 +186,14 @@ function getMFSFileContent(path) {
    return fetchRespCatch(url)
 }
 
+function ipfsGetHashContent(hash) {
+ url = api_url + 'cat?arg='+hash
+ console.debug('url: '+url);
+ return fetchRespCatch(url)
+ .then(consLog('ipfsGetHashContent'))
+ .catch(logError)
+}
+
 function ipfsGetContentHash(buf) {
  url = api_url + 'add?file=blob.data&cid-version=0&hash-only=1'
  console.log('url: '+url);
@@ -187,6 +204,42 @@ function ipfsGetContentHash(buf) {
  .catch(logError)
 
 }
+
+function ipfsPinAdd(hash) {
+   let url = api_url + 'pin/add?arg=/ipfs/'+hash+'&progress=true'
+   return fetchGetPostText(url)
+   .then(text => { console.log('ipfsPinAdd.text',text); })
+   .catch(err => console.error(err, hash))
+}
+
+function ipfsPinRm(hash) {
+     let url = api_url + 'pin/rm?arg=/ipfs/'+hash
+     console.log('ipfsPinRm.url',url)
+     return fetchGetPostJson(url)
+   .then( json => { console.log('ipfsPinRm.json',json);
+       return json.Pins  // Improve when recursive ?
+   })
+   .catch(err => console.error(err, hash))
+ }
+
+function getPinStatus(hash) { // getdata
+  let [callee, caller] = functionNameJS(); // logInfo("message !")
+   let  url = api_url + 'pin/ls?arg=/ipfs/'+hash+'&type=all'
+   return fetchRespNoCatch(url)
+   .then( obj => {
+       let status;
+       if (typeof(obj.Code) == 'undefined') {
+         status = obj.Keys[hash].Type
+       } else {
+         status = 'unpinned'
+       }
+       console.debug(callee+': '+hash+" \u21A6",status);
+       return Promise.resolve(status)
+   })
+   .catch( obj => { logError('getPinStatus.catch',obj) })
+}
+
+
 
 function ipfsRmMFSFileUnless06(mfspath) {
   if (ipfsversion.substr(0,3) == '0.6') {
