@@ -75,7 +75,7 @@ if (typeof(peerid) == 'undefined') {
 	.then( replacePeerIdInForm )
 	.then( peerid => {
 	    let s = peerid.substr(0,7);
-	    console.debug(callee+'.s:',s);
+	    console.debug('main.s:',s);
 	    replaceInTagsByClassName('shortid',s)
 	})
 	.catch(logError);
