@@ -32,8 +32,9 @@ if (typeof(core) == 'undefined') {
     var core = {};
     core['name'] = 'blockRings™'
     core['index'] = 'brindex.log'
-    core['history'] = 'history.log'
     core['dir'] = '/.brings';
+    core['history'] = core['dir'] + '/published/history.log'
+
 }
 
 if (typeof(api_url) == 'undefined') {
@@ -50,21 +51,23 @@ if (typeof(ipfsversion) == 'undefined') {
     ipfsVersion().then( v => { window.ipfsversion = v })
 } else {
     let [callee, caller] = functionNameJS();
-    console.log("TEST."+callee+'.ipfsversion: ',ipfsversion);
+    console.debug("TEST."+callee+'.ipfsversion: ',ipfsversion);
 }
 // --------------------------------------------
 
 function ipfsVersion() {
-    let [callee, caller] = functionNameJS();
-    console.debug(callee+'.entering');
-    
-    let url = api_url + 'version'
-    return fetchGetPostJson(url)
-	.then( obj => { console.debug(callee+'.version.obj: ',obj);
-	    return obj.Version; })
-	.catch(console.error)
+   let url = api_url + 'version';
+   return fetch(url,{ method:'POST' })
+   .then( resp => resp.json() )
+   .then( obj => {
+      console.log('ipfs.version.obj: ',obj);
+      return obj.Version; })
+   .catch(console.error)
 }
 
+var promisedPeerId = getPeerId()
+
+/* 
 // get and replace the peer id ...
 if (typeof(peerid) == 'undefined') {
     var peerid;
@@ -97,6 +100,7 @@ function replacePeerIdInForm(id) {
     }
     return id
 }
+*/
 
 async function ipfsPublish(pubpath) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
@@ -526,9 +530,6 @@ function fetchAPI(url) {
 }
 
 function getPeerId() {
-    let [callee, caller] = functionNameJS(); // logInfo("message !")
-    console.debug(callee+'.entering');
-
     let url = api_url + 'config?&arg=Identity.PeerID&encoding=json';
     return fetch(url,{ method: 'POST'} )
 	.then( resp => resp.json() )
@@ -539,6 +540,6 @@ function getPeerId() {
 		return Promise.reject(obj)
         }
       })
-     .catch(logError)
+     .catch(console.error)
 }
 
