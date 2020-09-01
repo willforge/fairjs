@@ -8,7 +8,10 @@
 // <script>
 // <script src="https://cdn.jsdelivr.net/gh/mychelium/js@ca0824a/dist/sha256.min.js" integrity="sha256-YIafx9wlTYK6CHM0cY15DbyqIN2pA/Yy4QpMrwf9Cpg=" crossorigin="anonymous"></script>
 // <script src="https://cdn.jsdelivr.net/gh/michel47/snippets@0.7.8/js/essential.js" integrity="sha256-FQCrKCV4H4gAfinouKXwvLZ2SHzYHhBwvPlqVnH0EAs=" crossorigin="anonymous"></script>
-// console.log => console.debug by Emile Achadde 27 août 2020 at 16:15:22+02:00
+//
+// Log:
+//  console.log => console.debug by Emile Achadde 27 août 2020 at 16:15:22+02:00
+// ---
 
 var thisscript = document.currentScript
 thisscript.version = '1.1';
@@ -34,7 +37,7 @@ if (typeof(core) == 'undefined') {
     core['index'] = 'brindex.log'
     core['dir'] = '/.brings';
     core['history'] = core['dir'] + '/published/history.log'
-
+  console.log('core:',core)
 }
 
 if (typeof(api_url) == 'undefined') {
@@ -67,7 +70,7 @@ function ipfsVersion() {
 
 var promisedPeerId = getPeerId()
 
-/* 
+/* this portion of the code need to be on the app side ...
 // get and replace the peer id ...
 if (typeof(peerid) == 'undefined') {
     var peerid;
@@ -102,6 +105,32 @@ function replacePeerIdInForm(id) {
 }
 */
 
+function getNid(string) {
+  let [callee, caller] = functionNameJS();
+  console.log(callee+'.input.string:',string)
+  let ns36 = BigInt('0x'+sha256(string)).toString(36).substr(0,13)
+  console.log(callee+'.ns36:',ns36)
+  return ns36
+}
+
+function shard_n_key(s) {
+  let s2 = sha256(s)
+  return [s2.substr(-4,3),s2.substr(0,18) ];
+
+}
+function shard(s) {
+   return sha256(s).substr(-4,3);
+}
+
+function hashkey(s) {
+   return sha256(s).substr(0,18);
+}
+
+function shortqm(qm) {
+   return qm.substr(0,6)+'...'+qm.substr(-3)
+}
+
+
 async function ipfsPublish(pubpath) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.pubpath',pubpath);
@@ -110,16 +139,16 @@ async function ipfsPublish(pubpath) {
     let pname;
     let fname;
     if (pubpath.match('/./')) {
-	[parent,fname] = pubpath.split('/./');
-	pname=parent.substr(parent.lastIndexOf('/')+1)
-	fname = pname+'/'+fname;
+       [parent,fname] = pubpath.split('/./');
+       pname=parent.substr(parent.lastIndexOf('/')+1);
+       fname = pname+'/'+fname;
     } else {
-	parent = pubpath;
-	let p = parent.slice(0,-1).lastIndexOf('/')
-	console.debug(callee+'.p: ',p);
-	//let grandparent = parent.substring(0,p)
-	pname=parent.substr(p+1)
-	fname = pname;
+       parent = pubpath;
+       let p = parent.slice(0,-1).lastIndexOf('/');
+       console.debug(callee+'.p: ',p);
+       //let grandparent = parent.substring(0,p)
+       pname=parent.substr(p+1);
+       fname = pname;
     }
 
     console.debug(callee+'.parent: ',parent);
@@ -141,7 +170,7 @@ async function ipfsPublish(pubpath) {
     let indexlogf = core.dir+'/shards/'+shard+'/'+core.index;
     let lhash = await ipfsLogAppend(indexlogf,record);
     console.debug(callee+'.lhash:',lhash);
-    let bhash = await getMFSFileHash(core.dir); // get hash of POR
+    let bhash = await getMFSFileHash(core.dir); // get hash of PoR
     // publish under self/peerid
     let phash = await ipfsNamePublish('self','/ipfs/'+bhash);
     console.debug(callee+'.phash:',phash);
@@ -438,19 +467,19 @@ function ipfsWriteJson(mfspath,obj) {
 }
 
 function ipfsLogAppend(mfspath,record) {
-    let [callee, caller] = functionNameJS(); // logInfo("message !")
-    console.debug(callee+'.input.mfspath:',mfspath);
-    console.debug(callee+'.input.record:',record);
+   let [callee, caller] = functionNameJS(); // logInfo("message !")
+   console.debug(callee+'.input.mfspath:',mfspath);
+   console.debug(callee+'.input.record:',record);
 
-    return createParent(mfspath)
-	.then( _ => getMFSFileSize(mfspath))
-	.then( offset => {
-	    console.debug(mfspath,': offset=',offset);
-	    var url = api_url + 'files/write?arg=' + mfspath + '&raw-leave=true&trickle=true&cid-base=base58btc&create=true&truncate=false&offset='+offset;
-	    return fetchPostText(url, record+"\n")
-		.then( _ => getMFSFileHash(mfspath)) 
-	})
-	.catch(logError)
+   return createParent(mfspath)
+      .then( _ => getMFSFileSize(mfspath))
+      .then( offset => {
+            console.debug(mfspath,': offset=',offset);
+            var url = api_url + 'files/write?arg=' + mfspath + '&raw-leave=true&trickle=true&cid-base=base58btc&create=true&truncate=false&offset='+offset;
+            return fetchPostText(url, record+"\n")
+            .then( _ => getMFSFileHash(mfspath)) 
+            })
+   .catch(logError)
 }
 
 function createParent(path) {
@@ -462,84 +491,84 @@ function createParent(path) {
     return fetch(url, {method:'POST'})
 	.then( resp => resp.json() )
 	.then( json => {
-	    if (typeof(json.Code) == 'undefined') {
-		console.debug(callee+'.dir:',dir);
-		console.debug(callee+'.json:',json);
-		return json;
-	    } else {
-		// {"Message":"file does not exist","Code":0,"Type":"error"}
-		console.debug(callee+'.! -e dir',dir);
-		console.debug(callee+'.json',json)
-		url = api_url + 'files/mkdir?arg=' + dir + '&parents=true'
-		return fetch(url,{method:'POST'})
-		    .then(
-			resp => {
-			    console.debug(callee+'.mkdir.resp:',resp)
-			    if (resp.ok) { // if mkdir sucessful, return hash
-				var url = api_url + 'files/stat?arg=' + dir + '&size=true'
-				return fetch(url,{method:'POST'})
-				    .then( resp => resp.json() )
-			    } else {
-				Promise.reject(new Error(resp.statusText))
-			    }
-			})
-		    .then ( obj => { console.debug(callee+'.obj: ',obj); return obj })
-		    .catch(logError)
-	    } 
+        if (typeof(json.Code) == 'undefined') {
+        console.debug(callee+'.dir:',dir);
+        console.debug(callee+'.json:',json);
+        return json;
+        } else {
+        // {"Message":"file does not exist","Code":0,"Type":"error"}
+        console.debug(callee+'.! -e dir',dir);
+        console.debug(callee+'.json',json)
+        url = api_url + 'files/mkdir?arg=' + dir + '&parents=true'
+        return fetch(url,{method:'POST'})
+        .then(
+              resp => {
+              console.debug(callee+'.mkdir.resp:',resp)
+              if (resp.ok) { // if mkdir sucessful, return hash
+              var url = api_url + 'files/stat?arg=' + dir + '&size=true'
+              return fetch(url,{method:'POST'})
+              .then( resp => resp.json() )
+              } else {
+              Promise.reject(new Error(resp.statusText))
+              }
+              })
+        .then ( obj => { console.debug(callee+'.obj: ',obj); return obj })
+           .catch(logError)
+        } 
 	})
 	.catch(consLog('Error:'))
 }
 
 function getMFSFileSize(mfspath) {
-    let [callee, caller] = functionNameJS(); // logInfo("message !")
-    console.debug(callee+'.input.mfspath:',mfspath);
+   let [callee, caller] = functionNameJS(); // logInfo("message !")
+   console.debug(callee+'.input.mfspath:',mfspath);
 
-    var url = api_url + 'files/stat?arg=' + mfspath + '&size=true'
-    return fetch(url,{method:'POST'})
-	.then( resp => resp.json() )
-	.then(consLog('getMFSFileSize'))
-	.then( json => { return (typeof json.Size == 'undefined') ? 0 : json.Size } )
-	.catch(consLog('getMFSFileSize'))
+   var url = api_url + 'files/stat?arg=' + mfspath + '&size=true'
+      return fetch(url,{method:'POST'})
+      .then( resp => resp.json() )
+      .then(consLog('getMFSFileSize'))
+      .then( json => { return (typeof json.Size == 'undefined') ? 0 : json.Size } )
+      .catch(consLog('getMFSFileSize'))
 }
 
 function getMFSFileHash(mfspath) {
-    let [callee, caller] = functionNameJS(); // logInfo("message !")
-    console.debug(callee+'.input.mfspath:',mfspath);
+   let [callee, caller] = functionNameJS(); // logInfo("message !")
+   console.debug(callee+'.input.mfspath:',mfspath);
 
-    var url = api_url + 'files/stat?arg='+mfspath+'&hash=true'
-    return fetch(url,{method:'POST'})
-	.then( resp => resp.json() )
-	.then( json => {
-	    if (typeof json.Hash == 'undefined') {
-		if (typeof(qmEmpty) != 'undefined') { return qmEmpty }
-		else { return 'QmYYY' }
-	    } else {
-		return json.Hash
-	    }
-	})
-	.catch(logError)
+   var url = api_url + 'files/stat?arg='+mfspath+'&hash=true'
+      return fetch(url,{method:'POST'})
+      .then( resp => resp.json() )
+      .then( json => {
+            if (typeof json.Hash == 'undefined') {
+            if (typeof(qmEmpty) != 'undefined') { return qmEmpty }
+            else { return 'QmYYY' }
+            } else {
+            return json.Hash
+            }
+            })
+   .catch(logError)
 }
 
 function fetchAPI(url) {
-    let [callee, caller] = functionNameJS(); // logInfo("message !")
-    console.debug(callee+'.input.url:',url);
+   let [callee, caller] = functionNameJS(); // logInfo("message !")
+   console.debug(callee+'.input.url:',url);
 
-    return fetch(url,{method:'POST'})
-	.then(obj => { return obj; })
-	.catch(ConsLog('fetchAPI'))
+   return fetch(url,{method:'POST'})
+      .then(obj => { return obj; })
+      .catch(ConsLog('fetchAPI'))
 }
 
 function getPeerId() {
-    let url = api_url + 'config?&arg=Identity.PeerID&encoding=json';
-    return fetch(url,{ method: 'POST'} )
-	.then( resp => resp.json() )
-	.then( obj => {
+   let url = api_url + 'config?&arg=Identity.PeerID&encoding=json';
+   return fetch(url,{ method: 'POST'} )
+      .then( resp => resp.json() )
+      .then( obj => {
             if (typeof(obj) != 'undefined') {
-		return Promise.resolve(obj.Value)
+            return Promise.resolve(obj.Value)
             } else {
-		return Promise.reject(obj)
-        }
-      })
-     .catch(console.error)
+            return Promise.reject(obj)
+            }
+            })
+   .catch(console.error)
 }
 
