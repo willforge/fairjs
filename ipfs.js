@@ -270,8 +270,8 @@ function ipfsPinAdd(hash) {
     console.debug(callee+'.input.hash:',hash);
 
     let url = api_url + 'pin/add?arg=/ipfs/'+hash+'&progress=true'
-    return fetchGetPostText(url)
-	.then(text => { console.log('ipfsPinAdd.text',text); })
+    return fetchGetPostJson(url)
+	.then(json => { console.debug(callee+'.json',json); return json })
 	.catch(err => console.error(err, hash))
 }
 

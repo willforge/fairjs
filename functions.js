@@ -208,6 +208,7 @@ function togglePinStatus(status, hash) {
     }
 }
 
+/* was duplicated !
 function ipfsPinAdd(hash) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.hash:',hash);
@@ -219,6 +220,7 @@ function ipfsPinAdd(hash) {
 	.then(text => { console.debug('ipfsPinAdd.text',text); })
 	.catch(err => console.error(err, hash))
 }
+*/
 
 function ipfsPinRm(hash) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
