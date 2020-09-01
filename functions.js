@@ -208,34 +208,6 @@ function togglePinStatus(status, hash) {
     }
 }
 
-/* was duplicated !
-function ipfsPinAdd(hash) {
-    let [callee, caller] = functionNameJS(); // logInfo("message !")
-    console.debug(callee+'.input.hash:',hash);
-
-    let url = api_url + 'pin/add?arg=/ipfs/'+hash+'&progress=true'
-    console.debug(callee+'.url:',url);
-    
-    return fetchGetPostText(url)
-	.then(text => { console.debug('ipfsPinAdd.text',text); })
-	.catch(err => console.error(err, hash))
-}
-*/
-
-function ipfsPinRm(hash) {
-    let [callee, caller] = functionNameJS(); // logInfo("message !")
-    console.debug(callee+'.input.hash:',hash);
-    
-    let url = api_url + 'pin/rm?arg=/ipfs/'+hash
-    console.debug(callee+'.url:',url)
-    
-    return fetchGetPostJson(url)
-	.then( json => { console.debug('ipfsPinRm.json',json);
-	    return json.Pins  // Improve when recursive ?
-	})
-	.catch(err => console.error(err, hash))
-} 
-
 function getContentofIpfsPath(ipfsPath) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.ipfsPath:',ipfsPath);
