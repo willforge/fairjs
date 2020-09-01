@@ -9,10 +9,12 @@ thisscript.version = '1.0';
 thisscript.name = thisscript.src.replace(RegExp('.*/([^/]+)$'),"$1");
 console.log(thisscript.name+': '+thisscript.version);
 
+/*
 if (document.location.href.match('8088')) {
     api_url = 'http://127.0.0.1:5021/api/v0/'
     gw_url = 'http://127.0.0.1:8198'
 }
+*/
 
 function getInputValue(id) {
     let [callee, caller] = functionNameJS();
