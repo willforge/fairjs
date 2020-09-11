@@ -6,6 +6,10 @@
 // console.log => console.debug by Emile Achadde 27 août 2020 at 15:24:52+02:00
 
 
+// dependancies:
+// js/base58.js
+
+
 window.essential = { 'version' : '1.1' };
 console.log('essential.js: '+window.essential.version)
 
@@ -199,6 +203,7 @@ function validateRespNoCatch(resp) { // validate: OK ? text : json
 
 function validateResp(resp) { // validate: OK ? text : json
     let [callee, caller] = functionNameJS();
+    console.debug(callee+'.stack:',Error().stack);
     console.debug(callee+'.input.resp:',resp);
 
     if (resp.ok) {
@@ -279,6 +284,17 @@ function fetchGetResp(url) {
 	.catch(consLog('fetchGetResp.catch.resp: '))
 }
 
+function fetchGetPostBinary(url) {
+    let [callee, caller] = functionNameJS();
+    console.debug(callee+'.input.url:',url);
+
+    return fetch(url, { method: "POST"} )
+	.then(validateStatus)
+	.then( resp =>  resp.blob() )
+	.then( blob => { console.debug(callee+'.blob:',blob); return blob; })
+	.catch(consLog('fetchGetPostBinary.catch.resp: '))
+}
+
 function fetchGetPostText(url) {
     let [callee, caller] = functionNameJS();
     console.debug(callee+'.input.url:',url);
@@ -299,11 +315,12 @@ function fetchGetText(url) {
 function fetchGetPostJson(url) {
     let [callee, caller] = functionNameJS();
     console.debug(callee+'.input.url:',url);
-
     return fetch(url,{ method: "POST"} )
 	.then(validateStatus)
-	.then( resp => resp.json() )
-	.catch(consLog('fetchGetPostJson.catch.resp: '))
+	.then( resp => { console.debug(callee+'.resp:',resp); return resp.json() } )
+	.then( json => { console.debug(callee+'.json:',json); return json } )
+	.catch(console.error)
+	//.catch(consLog('fetchGetPostJson.catch.resp: '))
 }
 function fetchGetJson(url) {
     let [callee, caller] = functionNameJS();
@@ -412,9 +429,9 @@ function qm2Int(qm) {
 
     plain = base58.decode(qm)
     let q16 = plain.to_hex();
-    console.debug(callee+'f'+q16)
+    console.debug(callee+'.f'+q16)
     let d = q16.split('.');
-    console.debug(callee+'d: '+d)
+    console.debug(callee+'.d: '+d)
     return ((((((+d[0])*256)+(+d[1]))*256)+(+d[2]))*256)+(+d[3]);
 }
 

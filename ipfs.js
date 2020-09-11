@@ -180,7 +180,25 @@ async function ipfsPublish(pubpath) {
 
 }
 
+function ipfsGetKeyByName(symb) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.symb:',symb);
+    var url = api_url + 'key/list?l=true&ipns-base=b58mh'
+    return fetchGetPostJson(url)
+	.then(consLog(callee))
+	.then( json => {
+      let key_obj = json.Keys.find( e => e.Name == symb )
+      console.debug(callee+'.key_obj:',key_obj)
+      return key_obj.Id
+       
+     })
+	.catch(logError)
+}
+
 function ipfsNamePublish(k,v) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.k:',k);
+    console.debug(callee+'.input.v:',v);
     var url = api_url + 'name/publish?key='+k+'&arg='+v+'&allow-offline=1&resolve=0';
     return fetchGetPostJson(url)
 	.then(consLog('ipfsNamePublish'))
@@ -192,7 +210,7 @@ function ipfsAddBinaryContent(string) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.string:',string);
     
-    url = api_url + 'add?file=content.txt&cid-version=0'
+    url = api_url + 'add?file=content.dat&cid-version=0'
     return fetchPostBinary(url,string)
 	.then( resp => resp.json() )
 	.then( json => json.Hash )
@@ -211,6 +229,16 @@ function ipfsAddBinaryFile(file) {
 		.then( json => json.Hash )
 		.catch(logError)
 	})
+	.catch(logError)
+}
+function ipfsAddTextContent(string) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.string:',string);
+    
+    url = api_url + 'add?file=content.txt&cid-version=0'
+    return fetchPostBinary(url,string)
+	.then( resp => resp.json() )
+	.then( json => json.Hash )
 	.catch(logError)
 }
 
@@ -240,6 +268,15 @@ function getMFSFileContent(path) {
     return fetchRespCatch(url)
 }
 
+function ipfsGetBinaryByHash(hash) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.hash:',hash);
+    url = api_url + 'cat?arg='+hash
+    console.debug('url: '+url);
+    return fetchGetPostBinary(url)
+  	.catch(console.Error)
+}
+
 function ipfsGetHashContent(hash) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.hash:',hash);
@@ -248,9 +285,10 @@ function ipfsGetHashContent(hash) {
     console.debug('url: '+url);
     return fetchRespCatch(url)
 	.then(consLog('ipfsGetHashContent'))
-	.catch(logError)
+	.catch(console.Error)
 }
 
+// function ipfsGetHashByContent(buf)
 function ipfsGetContentHash(buf) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.buf:',buf);
@@ -263,6 +301,28 @@ function ipfsGetContentHash(buf) {
 	.then( json => json.Hash )
 	.catch(logError)
 
+}
+
+function ipnsGetContentByKey(key) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.key:',key);
+
+    url = api_url + 'cat?arg=/ipns/'+key
+    console.debug(callee+'.url: '+url);
+    return fetchGetPostText(url)
+	.then( buf => { console.log(callee+'.buf:',buf); return buf; })
+  .catch(logError)
+
+}
+
+function ipfsLsofPath(path) {
+    let [callee, caller] = functionNameJS();
+    console.debug(callee+'.input.path:',path);
+    url = api_url + 'ls?arg='+path
+    console.debug(callee+'.url: '+url);
+    return fetchGetPostJson(url)
+	.then( json => { console.log(callee+'.json:',json); return json.Objects[0]; })
+  .catch(logError)
 }
 
 function ipfsPinAdd(hash) {
