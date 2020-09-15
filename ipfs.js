@@ -310,7 +310,13 @@ function ipnsGetContentByKey(key) {
     url = api_url + 'cat?arg=/ipns/'+key
     console.debug(callee+'.url: '+url);
     return fetchGetPostText(url)
-	.then( buf => { console.log(callee+'.buf:',buf); return buf; })
+	.then( obj => { console.log(callee+'.obj:',obj);
+    if (typeof(obj.status) != undefined) { // error
+      return obj.status + ' ' + obj.statusText
+    } else {
+      return obj
+    }
+   })
   .catch(logError)
 
 }
