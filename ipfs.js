@@ -277,14 +277,15 @@ function ipfsGetBinaryByHash(hash) {
   	.catch(console.Error)
 }
 
-function ipfsGetHashContent(hash) {
+const ipfsGetHashContent = ipfsGetContentByHash;
+function ipfsGetContentByHash(hash) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.hash:',hash);
 
     url = api_url + 'cat?arg='+hash
     console.debug('url: '+url);
     return fetchRespCatch(url)
-	.then(consLog('ipfsGetHashContent'))
+	.then(consLog(callee))
 	.catch(console.Error)
 }
 
