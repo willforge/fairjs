@@ -288,8 +288,8 @@ function ipfsGetHashContent(hash) {
 	.catch(console.Error)
 }
 
-// function ipfsGetHashByContent(buf)
-function ipfsGetContentHash(buf) {
+const ipfsGetContentHash = ipfsGetHashByContent;
+function ipfsGetHashByContent(buf) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.buf:',buf);
 
@@ -300,8 +300,18 @@ function ipfsGetContentHash(buf) {
 	.then(consLog('ipfsGetContentHash'))
 	.then( json => json.Hash )
 	.catch(logError)
-
 }
+function ipfsPostSHA1ByContent(buf) {
+   let [callee, caller] = functionNameJS(); // logInfo("message !")
+   console.debug(callee+'.input.buf:',buf);
+   url = api_url + 'add?file=blob.data&hash=sha1=0&hash-only=1'
+      console.debug(callee+'.url: '+url);
+   return fetchPostBinary(url,buf)
+      .then( resp => resp.json() )
+      .then( json => json.Hash )
+      .catch(console.error)
+}
+
 
 function ipnsGetContentByKey(key) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")

@@ -396,6 +396,10 @@ function getTic() {
     return +result
 }
 
+function getDate() { 
+   TBD('date function to be writen');
+}
+
 function getSpot(tic, ip, peerId, nonce) {
     let [callee, caller] = functionNameJS();
     console.debug(callee+'.input.tic:',tic);
