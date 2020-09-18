@@ -288,27 +288,44 @@ function ipfsGetHashContent(hash) {
 	.catch(console.Error)
 }
 
-const ipfsGetContentHash = ipfsGetHashByContent;
 function ipfsGetHashByContent(buf) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.buf:',buf);
-
-    url = api_url + 'add?file=blob.data&cid-version=0&hash-only=1'
+    // DO NOT STORE CONTENT !
+    url = api_url + 'add?only-hash=true&cid-vesion=0'
     console.debug(callee+'.url: '+url);
     return fetchPostBinary(url,buf)
 	.then( resp => resp.json() )
-	.then(consLog('ipfsGetContentHash'))
+	.then(consLog(callee))
 	.then( json => json.Hash )
 	.catch(logError)
 }
+const ipfsGetContentHash  = ipfsPostHashByContent
+function ipfsPostHashByContent(buf) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.buf:',buf);
+    url = api_url + 'add?file=blob.data&cid-version=0'
+    console.debug(callee+'.url: '+url);
+    return fetchPostBinary(url,buf)
+	.then( resp => resp.json() )
+	.then(consLog(callee))
+	.then( json => json.Hash )
+	.catch(logError)
+}
+
+
+
 function ipfsPostSHA1ByContent(buf) {
    let [callee, caller] = functionNameJS(); // logInfo("message !")
    console.debug(callee+'.input.buf:',buf);
-   url = api_url + 'add?file=blob.data&hash=sha1&hash-only=0'
+   url = api_url + 'add?file=blob.data&hash=sha1&only-hash=false&pin=false'
       console.debug(callee+'.url: '+url);
    return fetchPostBinary(url,buf)
       .then( resp => resp.json() )
-      .then( json => json.Hash )
+      .then( json => {
+            console.debug(callee+'.sha1:',json.Hash);
+            return json.Hash
+            })
       .catch(console.error)
 }
 
