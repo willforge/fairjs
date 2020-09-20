@@ -140,8 +140,8 @@ function serialize(form) {
 
 function fetchRespCatch(url,data) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.url:',url);
-    console.debug(callee+'.input.data:',data);
+    console.debug(caller+'.'+callee+'.input.url:',url);
+    console.debug(caller+'.'+callee+'.input.data:',data);
 
     if(typeof(data) != 'undefined') {
 	return fetchPostBinary(url,data)
