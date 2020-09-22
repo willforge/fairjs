@@ -319,7 +319,7 @@ function ipfsPostHashByContent(buf) {
 function ipfsPostSHA1ByContent(buf) {
    let [callee, caller] = functionNameJS(); // logInfo("message !")
    console.debug(callee+'.input.buf:',buf);
-   url = api_url + 'add?file=blob.data&hash=sha1&only-hash=false&pin=false'
+   url = api_url + 'add?file=blob.data&hash=sha1&cid-base=base58btc&only-hash=false&pin=false'
       console.debug(callee+'.url: '+url);
    return fetchPostBinary(url,buf)
       .then( resp => resp.json() )
