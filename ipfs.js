@@ -144,7 +144,7 @@ async function ipfsPublish(pubpath) {
        fname = pname+'/'+fname;
     } else {
        parent = pubpath;
-       let p = parent.slice(0,-1).lastIndexOf('/');
+       let p = pubpath.slice(0,-1).lastIndexOf('/'); // (remove trailing / in directories
        console.debug(callee+'.p: ',p);
        //let grandparent = parent.substring(0,p)
        pname=parent.substr(p+1);
@@ -156,6 +156,7 @@ async function ipfsPublish(pubpath) {
     console.debug(callee+'.fname: ',fname);
     // get hash of parent
     let hash = await getMFSFileHash(parent);
+       console.debug(callee+'.hash: ',hash);
     // get wrappper's hash of parent
     let whash = await getIpfsWrapperHash(pname,hash);
     let sha2 = sha256(parent);
@@ -260,6 +261,14 @@ function ipfsAddTextFile(file) {
 	.catch(logError)
 }
 
+function getJsonByMFSPath(path) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.path:',path);
+
+    let  url = api_url + 'files/read?arg='+path
+    return fetchGetPostJson(url)
+}
+
 function getMFSFileContent(path) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.path:',path);
@@ -307,6 +316,19 @@ function ipfsPostHashByContent(buf) {
     console.debug(callee+'.input.buf:',buf);
     url = api_url + 'add?file=blob.data&cid-version=0'
     console.debug(callee+'.url: '+url);
+    return fetchPostBinary(url,buf)
+	.then( resp => resp.json() )
+	.then(consLog(callee))
+	.then( json => json.Hash )
+	.catch(logError)
+}
+
+function ipfsPostHashByObject(obj) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.obj:',obj);
+    url = api_url + 'add?file=blob.data&cid-version=0'
+    console.debug(callee+'.url: '+url);
+    let buf = JSON.stringify(obj);
     return fetchPostBinary(url,buf)
 	.then( resp => resp.json() )
 	.then(consLog(callee))
@@ -522,7 +544,7 @@ async function getIpfsWrapperHash(name,hash) {
     console.debug(callee+'.name:',name);
     const empty = 'QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn';
     var url = api_url + 'object/patch/add-link?arg='+empty +'&arg=' + name + '&arg=' + hash;
-    let obj = await fetchGetPostJson(url);
+    let obj = await fetch(url,{ method: "POST"} ).then( resp => resp.json() ).catch(console.error)
     console.debug(callee+'.obj:',obj);
     let whash = obj.Hash;
     return whash

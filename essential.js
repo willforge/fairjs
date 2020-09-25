@@ -317,8 +317,8 @@ function fetchGetPostJson(url) {
     console.debug(callee+'.input.url:',url);
     return fetch(url,{ method: "POST"} )
 	.then(validateStatus)
-	.then( resp => { console.debug(callee+'.resp:',resp); return resp.json() } )
-	.then( json => { console.debug(callee+'.json:',json); return json } )
+	.then( resp => resp.json() )
+	.then( json => { console.debug(caller+'.'+callee+'.json:',json); return json } )
 	.catch(console.error)
 	//.catch(consLog('fetchGetPostJson.catch.resp: '))
 }
