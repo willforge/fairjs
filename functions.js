@@ -15,7 +15,6 @@ var groupsmap;
 var envelop;
 
 // usage: initialize();
-
 async function initialize() {
   await buildPeerId();
   friendsmap = await buildFriendsMap('/my/friends/peerids.yml');
@@ -23,6 +22,28 @@ async function initialize() {
   buildGroupSelect(groupsmap,'groupsel');
   buildNameSelect('groupsel','nicksel');
 
+}
+
+async function send_notification_token(peerkey) {
+   const sharedsecret = '123-secret-de-polichinelle;'; // to be fetched from keybase or end-to-end encrypted system
+   const today = Math.floor(getTic() / 60 / 5); // TODO avoid border effect problem on 5minutes bondaries
+   let fullname = getNameByPeerkey(peerkey);
+   let uniq_message = `biff-bit for ${fullname} is true on ${today}, this message is intended for peerid ${peerkey}`;
+   let uniq_content = getNid(sharedsecret + uniq_message);
+   let qm = await ipfsPostHashByContent(uniq_content);
+   return qm 
+}
+function getNameByPeerkey(id) {
+  let [callee, caller] = functionNameJS();
+  let nid = getNid('urn:ipns:'+id);
+  console.debug(callee+'.friendsmap['+nid+']:',friendsmap[nid])
+  let fullname = friendsmap[nid].fullname;
+  return fullname
+}
+
+async function notify(ev) {
+ let qm = await send_notification_token(envelop.to);
+ return qm
 }
 
 async function get_mbox() {

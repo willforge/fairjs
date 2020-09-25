@@ -173,9 +173,9 @@ async function ipfsPublish(pubpath) {
     console.debug(callee+'.lhash:',lhash);
     let bhash = await getMFSFileHash(core.dir); // get hash of PoR
     // publish under self/peerid
-    let phash = await ipfsNamePublish('self','/ipfs/'+bhash);
-    console.debug(callee+'.phash:',phash);
-    let ppath = '/ipfs/'+phash+'/'+pname;
+    let ipath = await ipfsNamePublish('self','/ipfs/'+bhash);
+    console.debug(callee+'.ipath:',ipath);
+    let ppath = ipath+'/'+pname;
     console.debug(callee+'.ppath:',ppath);
     return ppath;
 
@@ -203,7 +203,7 @@ function ipfsNamePublish(k,v) {
     var url = api_url + 'name/publish?key='+k+'&arg='+v+'&allow-offline=1&resolve=0';
     return fetchGetPostJson(url)
 	.then(consLog('ipfsNamePublish'))
-	.then( json => { return json.Hash })
+	.then( json => { return json.Value })
 	.catch(logError)
 }
 
