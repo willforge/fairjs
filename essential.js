@@ -141,16 +141,16 @@ function serialize(form) {
 function fetchRespCatch(url,data) {
     let [callee, caller] = functionNameJS();
     console.debug(caller+'.'+callee+'.input.url:',url);
-    console.debug(caller+'.'+callee+'.input.data:',data);
 
     if(typeof(data) != 'undefined') {
-	return fetchPostBinary(url,data)
-	    .then(validateResp)
-	    .catch(consErr('fetchRespCatch.obj'))
+       console.debug(caller+'.'+callee+'.input.data:',data);
+       return fetchPostBinary(url,data)
+          .then(validateResp)
+          .catch(consErr('fetchRespCatch.obj'))
     } else {
-	return fetchGetPostResp(url)
-	    .then(validateResp)
-	    .catch(consErr('fetchRespCatch.obj'))
+       return fetchGetPostResp(url)
+          .then(validateResp)
+          .catch(consErr('fetchRespCatch.obj'))
     }
 }
 

@@ -9,29 +9,93 @@
  */
 
 
-var peerid;
 var friendsmap = {};
 var groupsmap;
 var envelop;
 
 // usage: initialize();
 async function initialize() {
-  await buildPeerId();
+  await buildPeerId(); // Q: can we laod Friends and PeerId in // ?
   friendsmap = await buildFriendsMap('/my/friends/peerids.yml');
   groupsmap = buildGroups(friendsmap);
-  buildGroupSelect(groupsmap,'groupsel');
-  buildNameSelect('groupsel','nicksel');
 
 }
 
+async function get_notification_status(fullname,peerid) {
+   let [callee, caller] = functionNameJS();
+   var status = false;
+   const sharedsecret = '123-secret-de-polichinelle;'; // to be fetched from keybase or end-to-end encrypted system
+   const today = Math.floor(getTic() / 60 / 5); // TODO avoid border effect problem on 5minutes bondaries
+   let uniq_message = `biff-bit for ${fullname} is true on ${today}, this message is intended for peerid ${peerid}`;
+   console.debug(callee+'.uniq_message:',uniq_message);
+   let uniq_content = getNid(sharedsecret + uniq_message);
+   document.getElementById('token').innerHTML = uniq_content;
+   console.debug(callee+'.uniq_content:',uniq_content);
+   let uniq_hash = await ipfsGetHashByContent(uniq_content); // no post !
+   console.debug(callee+'.uniq_hash:',uniq_hash);
+   let buf = await ipfsGetContentByHash(uniq_hash); // pulling uniq_hash
+   if (buf == uniq_content) {
+      status = true;
+   } else {
+      console.debug(callee+'.buf:',buf);
+   }
+   return status 
+}
+
+
+// example: getMutableHead(peerkey,'/my/outbox/'+mboxid+'.json')
+async function getMutableHead(peerid,mutable) {
+   let [callee, caller] = functionNameJS();
+  let rootdir= await ipfsNameResolve(peerid);
+  console.debug(callee+'.rootdir:',rootdir);
+  let [shard,key] = shard_n_key(mutable);
+  console.debug(callee+'.shard:',shard);
+  console.debug(callee+'.key:',key);
+  let indexlogf = rootdir+'/shards/'+shard+'/'+core.index;
+  let yaml_index = await ipfsGetContentByPath(indexlogf);
+  console.debug(callee+'.yaml_index:',yaml_index);
+  let obj_index = yaml2obj(yaml_index)
+  console.debug(callee+'.obj_index:',obj_index);
+  return obj_index[key];
+}
+function yaml2obj(yaml) { // allow duplicate keys
+   let [callee, caller] = functionNameJS();
+   let json = {}
+   if (typeof(yaml.Code) == 'undefined') {
+      for (let line of yaml.split("\n")) {
+         if (line.match(/^\w+: /)) {
+            let [key,value] = line.split(new RegExp(': *'));
+            json[key] = value;
+         }
+      }
+   }
+   return json;
+}
+
+function yaml2json(yaml) {
+   let [callee, caller] = functionNameJS();
+   let json;
+   if (typeof(yaml.Code) == 'undefined') {
+      json = window.jsyaml.safeLoad(yaml);
+   } else {
+      json = {};
+   }
+   console.log(callee+'.json:',json);
+   return json;
+}
+
 async function send_notification_token(peerkey) {
+   let [callee, caller] = functionNameJS();
    const sharedsecret = '123-secret-de-polichinelle;'; // to be fetched from keybase or end-to-end encrypted system
    const today = Math.floor(getTic() / 60 / 5); // TODO avoid border effect problem on 5minutes bondaries
    let fullname = getNameByPeerkey(peerkey);
    let uniq_message = `biff-bit for ${fullname} is true on ${today}, this message is intended for peerid ${peerkey}`;
+   console.debug(callee+'.uniq_message:',uniq_message);
    let uniq_content = getNid(sharedsecret + uniq_message);
-   let qm = await ipfsPostHashByContent(uniq_content);
-   return qm 
+   console.debug(callee+'.uniq_content:',uniq_content);
+   let uniq_hash = await ipfsPostHashByContent(uniq_content);
+   console.debug(callee+'.uniq_hash:',uniq_hash);
+   return uniq_hash 
 }
 function getNameByPeerkey(id) {
   let [callee, caller] = functionNameJS();
@@ -89,8 +153,10 @@ function update_nicksel(ev) {
 async function buildPeerId() {
   let [callee, caller] = functionNameJS();
   peerid = await Promise.resolve(promisedPeerId);
+  console.debug(callee+'.peerid:',peerid);
+    let e = document.getElementById('node')
 
-    document.getElementById('sender').title = peerid;
+    if (e) { e.title = peerid; }
     for (e of document.getElementsByClassName('peerid')) {
       console.log(callee+'.e:',e);
       e.innerHTML = peerid;
@@ -171,16 +237,7 @@ function buildGroups(map) {
 
 async function buildFriendsMap(friendsfile) {
   return getMFSFileContent(friendsfile)
-     .then( yml => { 
-           let friends;
-           if (typeof(yml.Code) == 'undefined') {
-           friends = window.jsyaml.safeLoad(yml);
-           } else {
-           friends = {};
-           }
-           console.log('friends:',friends)
-           return friends
-           })
+     .then( yml => { return( yaml2json(yml) ); })
     .catch(console.error);
 }
 

@@ -118,7 +118,7 @@ function shard_n_key(s) {
   return [s2.substr(-4,3),s2.substr(0,18) ];
 
 }
-function shard(s) {
+function getShard(s) {
    return sha256(s).substr(-4,3);
 }
 
@@ -130,6 +130,11 @@ function shortqm(qm) {
    return qm.substr(0,6)+'...'+qm.substr(-3)
 }
 
+function indexlogfilename(mutable) {
+    let shard = getShard(mutable);
+    let indexlogf = core.dir+'/shards/'+shard+'/'+core.index;
+    return indexlogf
+}
 
 async function ipfsPublish(pubpath) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
@@ -206,6 +211,18 @@ function ipfsNamePublish(k,v) {
 	.then( json => { return json.Value })
 	.catch(logError)
 }
+function ipfsNameResolve(k) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.k:',k);
+    var url = api_url + 'name/resolve?arg='+k;
+    return '/ipfs/QmVFsEPkck1gUPvQ4tfft4AfjdkEQDz9qH7JbrEZBLRaPT'; // /!\ dbug ! CAUTION !
+    return fetchGetPostJson(url)
+    .then(consLog(callee))
+    .then( json => { return json.Path } )
+	  .catch(logError)
+   
+}
+
 
 function ipfsAddBinaryContent(string) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
@@ -291,10 +308,16 @@ function ipfsGetContentByHash(hash) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.hash:',hash);
 
-    url = api_url + 'cat?arg='+hash
+    url = api_url + 'cat?arg='+hash+'&timeout=300s'
     console.debug('url: '+url);
     return fetchRespCatch(url)
 	.then(consLog(callee))
+	.catch(console.Error)
+}
+
+function ipfsGetContentByPath(path) { // no timeout
+    url = api_url + 'cat?arg='+path;
+    return fetchRespCatch(url)
 	.catch(console.Error)
 }
 
