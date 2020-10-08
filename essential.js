@@ -262,6 +262,7 @@ function fetchPostJson(url, obj) {
     console.debug(callee+'.input.obj:',obj);
 
     let content = JSON.stringify(obj)
+    console.debug(callee+'.content:',content);
     let form = new FormData();
     form.append('file', content)
     return fetch(url, { method: "POST", mode: 'cors', body: form })

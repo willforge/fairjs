@@ -215,7 +215,6 @@ function ipfsNameResolve(k) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.k:',k);
     var url = api_url + 'name/resolve?arg='+k;
-    // return '/ipfs/QmVFsEPkck1gUPvQ4tfft4AfjdkEQDz9qH7JbrEZBLRaPT'; // /!\ dbug ! CAUTION !
     return fetchGetPostJson(url)
     .then(consLog(callee))
     .then( json => { return json.Path } )
