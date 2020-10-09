@@ -304,11 +304,11 @@ function ipfsGetBinaryByHash(hash) {
 }
 
 const ipfsGetHashContent = ipfsGetContentByHash;
-function ipfsGetContentByHash(hash) {
+function ipfsGetContentByHash(hash,timeout) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.hash:',hash);
-
-    url = api_url + 'cat?arg='+hash+'&timeout=300s'
+    if (typeof(timeout) == 'undefined') { timeout = 120 }
+    url = api_url + 'cat?arg='+hash+'&timeout='+timeout+'s'
     console.debug('url: '+url);
     return fetchRespCatch(url)
 	.then(consLog(callee))

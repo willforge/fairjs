@@ -90,6 +90,18 @@ function readAsDataURL(file) {
     });
 }
 
+function yaml2json(yaml) {
+   let [callee, caller] = functionNameJS();
+   let json;
+   if (typeof(yaml.Code) == 'undefined') {
+      json = window.jsyaml.safeLoad(yaml);
+   } else {
+      json = {};
+   }
+   console.debug(caller+'.'+callee+'.json:',json);
+   return json;
+}
+
 function query2json(q) {
     let [callee, caller] = functionNameJS();
     console.debug(callee+'.input.q:',q);
@@ -203,8 +215,8 @@ function validateRespNoCatch(resp) { // validate: OK ? text : json
 
 function validateResp(resp) { // validate: OK ? text : json
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.stack:',Error().stack);
-    console.debug(callee+'.input.resp:',resp);
+    console.debug(caller+'.'+callee+'.Error().stack:',Error().stack);
+    console.debug(caller+'.'+callee+'.input.resp:',resp);
 
     if (resp.ok) {
 	return Promise.resolve(
@@ -215,7 +227,7 @@ function validateResp(resp) { // validate: OK ? text : json
 			console.debug(callee+'.ok.json: ',json);
 			return json;
 		    } else {
-			console.debug(callee+'.ok.text: ',text);
+			console.debug(callee+'.ok.text: ',text.substr(0,46)+'...',{text});
 			return text;
 		    }
 		}));

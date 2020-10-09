@@ -21,23 +21,29 @@ async function initialize() {
 
 }
 
-async function get_notification_status(fullname,peerid) {
+async function get_notification_status(fullname,peerid,timeout) {
    let [callee, caller] = functionNameJS();
    var status = false;
    const sharedsecret = '123-secret-de-polichinelle;'; // to be fetched from keybase or end-to-end encrypted system
-   const today = Math.floor(getTic() / 60 / 5); // TODO avoid border effect problem on 5minutes bondaries
+   const today = Math.floor(getTic() / timeout); // TODO avoid border effect problem on 5minutes bondaries
    let uniq_message = `biff-bit for ${fullname} is true on ${today}, this message is intended for peerid ${peerid}`;
    console.debug(callee+'.uniq_message:',uniq_message);
    let uniq_content = getNid(sharedsecret + uniq_message);
-   document.getElementById('token').innerHTML = uniq_content;
-   console.debug(callee+'.uniq_content:',uniq_content);
+   document.getElementById('token').innerHTML = uniq_content + '🏷';
+   console.debug(callee+'.uniq_content:',uniq_content,'🏷');
    let uniq_hash = await ipfsGetHashByContent(uniq_content); // no post !
-   console.debug(callee+'.uniq_hash:',uniq_hash);
-   let buf = await ipfsGetContentByHash(uniq_hash); // pulling uniq_hash
+   console.debug(callee+'.uniq_hash:',uniq_hash,'🍪')
+   document.getElementById('status').innerHTML = '🔔';
+   let buf = await ipfsGetContentByHash(uniq_hash,timeout); // pulling uniq_hash
    if (buf == uniq_content) {
       status = true;
+      document.getElementById('status').innerHTML = '📫';
    } else {
-      console.debug(callee+'.buf:',buf);
+      console.debug(callee+'.buf: 💣',buf);
+      if (typeof(buf.Message) != 'undefined') {
+        document.getElementById('status').innerHTML = '💣'+buf.Message;
+      } else {
+      }
    }
    return status 
 }
@@ -72,17 +78,7 @@ function yaml2obj(yaml) { // allow duplicate keys
    return json;
 }
 
-function yaml2json(yaml) {
-   let [callee, caller] = functionNameJS();
-   let json;
-   if (typeof(yaml.Code) == 'undefined') {
-      json = window.jsyaml.safeLoad(yaml);
-   } else {
-      json = {};
-   }
-   console.log(callee+'.json:',json);
-   return json;
-}
+
 
 async function send_notification_token(peerkey) {
    let [callee, caller] = functionNameJS();
@@ -218,20 +214,21 @@ function buildGroupSelect(map,gselid) {
 
 
 function buildGroups(map) {
- let groups = {'all':[]};
- for (let i in Object.keys(map)) {
-       let key = Object.keys(map)[i];
-       let friend = map[key];
-       console.log('nick.',friend.nickname);
-          console.log('group:',friend.group)
-          if (typeof(groups[friend.group]) == 'undefined') {
-             groups[friend.group] = [];
-          } 
-          groups[friend.group].push(key);
-          groups['all'].push(key);
-    }
-    console.log('groups:',groups)
-    return groups
+   let [callee, caller] = functionNameJS();
+   let groups = {'all':[]};
+   for (let i in Object.keys(map)) {
+      let key = Object.keys(map)[i];
+      let friend = map[key];
+      //console.debug(callee+'.nick.',friend.nickname);
+      //console.log(callee+'.group:',friend.group);
+      if (typeof(groups[friend.group]) == 'undefined') {
+         groups[friend.group] = [];
+      } 
+      groups[friend.group].push(key);
+      groups['all'].push(key);
+   }
+   console.debug(callee+'.groups:',groups)
+      return groups
 }
 
 
