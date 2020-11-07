@@ -218,20 +218,21 @@ function buildGroupSelect(map,gselid) {
 
 
 function buildGroups(map) {
- let groups = {'all':[]};
- for (let i in Object.keys(map)) {
-       let key = Object.keys(map)[i];
-       let friend = map[key];
-       console.log('nick.',friend.nickname);
-          console.log('group:',friend.group)
-          if (typeof(groups[friend.group]) == 'undefined') {
-             groups[friend.group] = [];
-          } 
-          groups[friend.group].push(key);
-          groups['all'].push(key);
-    }
-    console.log('groups:',groups)
-    return groups
+   let [callee, caller] = functionNameJS();
+   let groups = {'all':[]};
+   for (let i in Object.keys(map)) {
+      let key = Object.keys(map)[i];
+      let friend = map[key];
+      //console.debug(callee+'.nick.',friend.nickname);
+      //console.log(callee+'.group:',friend.group);
+      if (typeof(groups[friend.group]) == 'undefined') {
+         groups[friend.group] = [];
+      } 
+      groups[friend.group].push(key);
+      groups['all'].push(key);
+   }
+   console.debug(callee+'.groups:',groups)
+      return groups
 }
 
 

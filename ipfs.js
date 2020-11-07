@@ -201,6 +201,21 @@ function ipfsGetKeyByName(symb) {
 	.catch(logError)
 }
 
+function ipfsGetKeyByName(symb) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.symb:',symb);
+    var url = api_url + 'key/list?l=true&ipns-base=b58mh'
+    return fetchGetPostJson(url)
+	.then(consLog(callee))
+	.then( json => {
+      let key_obj = json.Keys.find( e => e.Name == symb )
+      console.debug(callee+'.key_obj:',key_obj)
+      return key_obj.Id
+       
+     })
+	.catch(logError)
+}
+
 function ipfsNamePublish(k,v) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.k:',k);
@@ -215,7 +230,6 @@ function ipfsNameResolve(k) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.k:',k);
     var url = api_url + 'name/resolve?arg='+k;
-    //return '/ipfs/QmVFsEPkck1gUPvQ4tfft4AfjdkEQDz9qH7JbrEZBLRaPT'; // /!\ dbug ! CAUTION !
     return fetchGetPostJson(url)
     .then(consLog(callee))
     .then( json => { return json.Path } )
@@ -304,11 +318,11 @@ function ipfsGetBinaryByHash(hash) {
 }
 
 const ipfsGetHashContent = ipfsGetContentByHash;
-function ipfsGetContentByHash(hash) {
+function ipfsGetContentByHash(hash,timeout) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.hash:',hash);
-
-    url = api_url + 'cat?arg='+hash+'&timeout=300s'
+    if (typeof(timeout) == 'undefined') { timeout = 120 }
+    url = api_url + 'cat?arg='+hash+'&timeout='+timeout+'s'
     console.debug('url: '+url);
     return fetchRespCatch(url)
 	.then(consLog(callee))
