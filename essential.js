@@ -291,9 +291,25 @@ function list2json(d) {
 }
 
 function getTic() {
-   var dat = new Date();
-   var result = Math.floor(dat.getTime() / 1000);
+   var result = Math.floor(Date.now() / 1000);
    return +result
+}
+
+function getDate() {
+  let today = new Date();
+  console.debug('Date:',today.toUTCString())
+  console.debug('Date:',today.toISOString())
+  //var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+  var date = new Intl.DateTimeFormat().format(today)
+  return date
+}
+
+function getTime() {
+  let today = new Date();
+  let TZ = - today.getTimezoneOffset() / 60;
+  console.debug('TZ:',TZ)
+  var time = today.getHours()+':'+('0'+today.getMinutes()).slice(-2)+':'+('0'+today.getSeconds()).slice(-2)+'.'+('00'+today.getMilliseconds()).slice(-3)+' '+('0'+TZ).slice(-2);
+  return time
 }
 
 function getSpot(tic, ip, peerId, nonce) {

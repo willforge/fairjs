@@ -108,6 +108,8 @@ function replacePeerIdInForm(id) {
 function getNid(string) {
   let [callee, caller] = functionNameJS();
   console.log(callee+'.input.string:',string)
+  let sha2 = sha256(string)
+  console.log(callee+'.sha2:',sha2)
   let ns36 = BigInt('0x'+sha256(string)).toString(36).substr(0,13)
   console.log(callee+'.ns36:',ns36)
   return ns36
@@ -223,12 +225,53 @@ function ipfsNameResolve(k) {
    
 }
 
+function ipfsGetToken(string) {
+  let [callee, caller] = functionNameJS(); // logInfo("message !")
+  console.debug(callee+'.input.string:',string);
+  let url = api_url + 'add?file=content.dat&raw-leaves=true&hash=sha3-224&only-hash=true&cid-base=base58btc&pin=false'
+  return fetchPostText(url,string)
+  .then( resp => resp.json() )
+  .then( json => json.Hash )
+  .catch(logError)
 
+}
+function ipfsFindProvs(key) {
+   let [callee, caller] = functionNameJS();
+   return fetch(api_url+'dht/findprovs?arg='+key+'&verbose=true&num-providers=20&timeout=61s',{ method:'POST', mode: 'cors' })
+      .then( resp => resp.text() )
+      .then( text => {
+           let objs = text.replace(/(\n|\r)+$/, '').split("\n");
+           let provs = objs.map( (s) => JSON.parse(s) ).filter( (o) => o.Type == 4 );
+           console.debug(callee+'.provs:',provs)
+           let peerids = provs.map( (o) => o.Responses[0].ID );
+           return peerids;
+      })
+      .catch(console.error);
+}
+
+function ipfsAddToken(string) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.string:',string);
+    let url = api_url + 'add?file=content.dat&raw-leaves=true&hash=sha3-224&cid-base=base58btc&pin=true'
+    return fetchPostText(url,string)
+  	.then( resp => resp.json() )
+  	.then( json => json.Hash )
+	  .catch(logError)
+}
 function ipfsAddBinaryContent(string) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.string:',string);
     
-    url = api_url + 'add?file=content.dat&cid-version=0'
+    let url = api_url + 'add?file=content.dat&cid-version=0'
+    return fetchPostBinary(url,string)
+	.then( resp => resp.json() )
+	.then( json => json.Hash )
+	.catch(logError)
+}
+function ipfsAddRawContent(string) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.string:',string);
+    let url = api_url + 'add?file=content.dat&raw-leaves=true&cid-base=base58btc'
     return fetchPostBinary(url,string)
 	.then( resp => resp.json() )
 	.then( json => json.Hash )
@@ -254,7 +297,7 @@ function ipfsAddTextContent(string) {
     console.debug(callee+'.input.string:',string);
     
     url = api_url + 'add?file=content.txt&cid-version=0'
-    return fetchPostBinary(url,string)
+    return fetchPostText(url,string)
 	.then( resp => resp.json() )
 	.then( json => json.Hash )
 	.catch(logError)
@@ -605,6 +648,25 @@ function ipfsWriteJson(mfspath,obj) {
 	.catch(consLog('ipfsWriteJson'))
 }
 
+async function makeItRaw(mfspath) {
+  let [callee, caller] = functionNameJS(); // logInfo("message !")
+  let hash = await getMFSFileHash(mfspath); 
+  console.debug(callee+'.hash:',hash);
+  console.debug(callee+'.hash16:',hash.toString(16));
+  if (! hash.toString(16).match(/^0155/)) {
+   let  url = api_url + 'files/read?arg='+path
+   let buf = await fetchRespCatch(url)
+   console.debug(callee+'.buf:',buf);
+
+   url = api_url + 'files/write?arg=' + mfspath + '&raw-leaves=true&trickle=true&cid-base=base58btc&create=true&truncate=true';
+   return fetchPostBinary(url, buf)
+   .then( _ => getMFSFileHash(mfspath)) 
+   .catch(logError)
+  } else {
+   return hash;
+  }
+}
+
 function ipfsLogAppend(mfspath,record) {
    let [callee, caller] = functionNameJS(); // logInfo("message !")
    console.debug(callee+'.input.mfspath:',mfspath);
@@ -614,7 +676,7 @@ function ipfsLogAppend(mfspath,record) {
       .then( _ => getMFSFileSize(mfspath))
       .then( offset => {
             console.debug(mfspath,': offset=',offset);
-            var url = api_url + 'files/write?arg=' + mfspath + '&raw-leave=true&trickle=true&cid-base=base58btc&create=true&truncate=false&offset='+offset;
+            let url = api_url + 'files/write?arg=' + mfspath + '&raw-leaves=true&trickle=true&cid-base=base58btc&create=true&truncate=false&offset='+offset;
             return fetchPostText(url, record+"\n")
             .then( _ => getMFSFileHash(mfspath)) 
             })
