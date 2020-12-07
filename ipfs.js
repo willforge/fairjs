@@ -110,7 +110,7 @@ function getNid(string) {
   console.log(callee+'.input.string:',string)
   let sha2 = sha256(string)
   console.log(callee+'.sha2:',sha2)
-  let ns36 = BigInt('0x'+sha2.toString(36).substr(0,13)
+  let ns36 = BigInt('0x'+sha2).toString(36).substr(0,13)
   console.log(callee+'.ns36:',ns36)
   return ns36
 }
