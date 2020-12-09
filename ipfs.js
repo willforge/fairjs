@@ -672,11 +672,12 @@ function ipfsLogAppend(mfspath,record) {
    console.debug(callee+'.input.mfspath:',mfspath);
    console.debug(callee+'.input.record:',record);
 
+   // note is file doesn't exist then 
    return createParent(mfspath)
       .then( _ => getMFSFileSize(mfspath))
       .then( offset => {
             console.debug(mfspath,': offset=',offset);
-            let url = api_url + 'files/write?arg=' + mfspath + '&raw-leaves=true&trickle=true&cid-base=base58btc&create=true&truncate=false&offset='+offset;
+            let url = api_url + 'files/write?arg=' + mfspath + '&raw-leaves=true&cid-base=base58btc&create=true&truncate=false&offset='+offset;
             return fetchPostText(url, record+"\n")
             .then( _ => getMFSFileHash(mfspath)) 
             })
@@ -688,6 +689,7 @@ function createParent(path) {
     console.debug(callee+'.input.path:',path);
 
     let dir = path.replace(new RegExp('/[^/]*$'),'');
+    console.debug(callee+'.dir:',dir);
     var url = api_url + 'files/stat?arg=' + dir + '&size=true'
     return fetch(url, {method:'POST'})
 	.then( resp => resp.json() )
@@ -717,7 +719,7 @@ function createParent(path) {
            .catch(logError)
         } 
 	})
-	.catch(consLog('Error:'))
+	.catch(consLog('Error: '))
 }
 
 function getMFSFileSize(mfspath) {
@@ -756,7 +758,7 @@ function fetchAPI(url) {
 
    return fetch(url,{method:'POST'})
       .then(obj => { return obj; })
-      .catch(ConsLog('fetchAPI'))
+      .catch(consLog('fetchAPI'))
 }
 
 function getPeerId() {
