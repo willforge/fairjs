@@ -13,41 +13,58 @@
 //  console.log => console.debug by Emile Achadde 27 août 2020 at 16:15:22+02:00
 // ---
 
-var thisscript = document.currentScript
+const cfg_url = 'http://127.0.0.1:1124/config.json';
+const qmNull = 'QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n';
+var promisedConfig = load_config(cfg_url);
+var promisedPeerId;
+
+
+var thisscript = document.currentScript;
 thisscript.version = '1.1';
 thisscript.name = thisscript.src.replace(RegExp('.*/([^/]+)$'),"$1");
 
 // if experimental then switch to '../' (i.e. use local js)
 if (thisscript.className.match('exp') && document.location.href.match('michelc') ) {
-    let src = thisscript.src.replace(RegExp('.*/github\.(?:com|io)/'),'../')
-    thisscript.remove();
-    var script = document.createElement('script');
-    script.src = src;
-    console.log(thisscript.name+'.adding:',script.src);
-    document.getElementsByTagName('head')[0].appendChild(script);
+   let src = thisscript.src.replace(RegExp('.*/github\.(?:com|io)/'),'../');
+   thisscript.remove();
+   var script = document.createElement('script');
+   script.src = src;
+   console.log(thisscript.name+'.adding:',script.src);
+   document.getElementsByTagName('head')[0].appendChild(script);
 }
 
 console.log(thisscript.name+': '+thisscript.src+' ('+thisscript.version+')');
 
-// --------------------------------------------
-// global variables ...
-if (typeof(core) == 'undefined') {
-    var core = {};
-    core['name'] = 'fairRings™'
-    core['index'] = 'frindex.log'
-    core['dir'] = '/.../.frings';
-    core['history'] = core['dir'] + '/published/history.log'
-  console.log('core:',core)
-}
+// --------------------------------------------;
+// global variables ...;
 
+ if (typeof(core) == 'undefined') {
+      var core = {};
+      core['name'] = 'fairRings™'
+      core['index'] = 'frindex.log'
+      core['dir'] = '/.../.frings';
+      core['history'] = core['dir'] + '/published/history.log';
+      console.log('core:',core);
+ }
+
+promisedConfig.then( _ => {
 if (typeof(api_url) == 'undefined') {
-    var api_url = 'http://127.0.0.1:5001/api/v0/'
-    console.log('api_url: ',api_url)
+   if (typeof(config) != 'undefined') {
+      api_url = config.api_url;
+   } else {
+      api_url = 'http://127.0.0.1:5001/api/v0';
+   }
+   console.log('api_url: ',api_url)
 }
 if (typeof(gw_url) == 'undefined') {
-    var gw_url = 'http://127.0.0.1:8080'
-    console.log('gw_url: ',gw_url)
+   if (typeof(config) != 'undefined') {
+      gw_url = config.gw_url;
+   } else {
+      gw_url = 'http://127.0.0.1:8080';
+   }
+   console.log('gw_url: ',gw_url)
 }
+
 
 var container = document.getElementsByClassName('container');
 if (typeof(ipfsversion) == 'undefined') {
@@ -56,6 +73,11 @@ if (typeof(ipfsversion) == 'undefined') {
     let [callee, caller] = functionNameJS();
     console.debug("TEST."+callee+'.ipfsversion: ',ipfsversion);
 }
+
+ promisedPeerId = getPeerId();
+
+})
+.catch(console.error);
 // --------------------------------------------
 
 function ipfsVersion() {
@@ -68,7 +90,21 @@ function ipfsVersion() {
    .catch(console.error)
 }
 
-var promisedPeerId = getPeerId()
+// loading a config via "smart-contract" side channel
+async function load_config(cfg_url) {
+  return fetch(cfg_url)
+  .then( resp => resp.json() )
+  .then( json => {
+        if (typeof(json) != 'undefined') {
+          return Promise.resolve(json)
+        } else {
+          console.error('check if serve_config is running');
+          return Promise.reject(json)
+        }
+  })
+  .catch(console.error)
+}
+
 
 /* this portion of the code need to be on the app side ...
 // get and replace the peer id ...
@@ -185,7 +221,36 @@ async function ipfsPublish(pubpath) {
     let ppath = ipath+'/'+pname;
     console.debug(callee+'.ppath:',ppath);
     return ppath;
+}
 
+function ipfsGetKeyByName(symb) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.symb:',symb);
+    var url = api_url + 'key/list?l=true&ipns-base=b58mh'
+    return fetchGetPostJson(url)
+	.then(consLog(callee))
+	.then( json => {
+      let key_obj = json.Keys.find( e => e.Name == symb )
+      console.debug(callee+'.key_obj:',key_obj)
+      return key_obj.Id
+       
+     })
+	.catch(logError)
+}
+
+function ipfsGetKeyByName(symb) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.symb:',symb);
+    var url = api_url + 'key/list?l=true&ipns-base=b58mh'
+    return fetchGetPostJson(url)
+	.then(consLog(callee))
+	.then( json => {
+      let key_obj = json.Keys.find( e => e.Name == symb )
+      console.debug(callee+'.key_obj:',key_obj)
+      return key_obj.Id
+
+     })
+	.catch(logError)
 }
 
 function ipfsGetKeyByName(symb) {
@@ -217,7 +282,6 @@ function ipfsNameResolve(k) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.k:',k);
     var url = api_url + 'name/resolve?arg='+k;
-    //return '/ipfs/QmVFsEPkck1gUPvQ4tfft4AfjdkEQDz9qH7JbrEZBLRaPT'; // /!\ dbug ! CAUTION !
     return fetchGetPostJson(url)
     .then(consLog(callee))
     .then( json => { return json.Path } )
@@ -272,6 +336,17 @@ function ipfsAddRawContent(string) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.string:',string);
     let url = api_url + 'add?file=content.dat&raw-leaves=true&cid-base=base58btc'
+    return fetchPostBinary(url,string)
+	.then( resp => resp.json() )
+	.then( json => json.Hash )
+	.catch(logError)
+}
+
+function ipfsAddBinaryContent(string) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.string:',string);
+    
+    url = api_url + 'add?file=content.dat&cid-version=0'
     return fetchPostBinary(url,string)
 	.then( resp => resp.json() )
 	.then( json => json.Hash )
@@ -346,12 +421,32 @@ function ipfsGetBinaryByHash(hash) {
   	.catch(console.Error)
 }
 
-const ipfsGetHashContent = ipfsGetContentByHash;
 function ipfsGetContentByHash(hash) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.hash:',hash);
 
     url = api_url + 'cat?arg='+hash+'&timeout=300s'
+    console.debug('url: '+url);
+    return fetchRespCatch(url)
+	.then(consLog(callee))
+	.catch(console.Error)
+}
+
+function ipfsGetHashBinary(hash,timeout) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.hash:',hash);
+    if (typeof(timeout) == 'undefined') { timeout = 120 }
+    url = api_url + 'cat?arg='+hash+'&timeout='+timeout+'s'
+    console.debug('url: '+url);
+    return fetchGetPostBinary(url)
+  	.catch(console.Error)
+}
+
+function ipfsGetHashContent(hash,timeout) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.hash:',hash);
+    if (typeof(timeout) == 'undefined') { timeout = 120 }
+    url = api_url + 'cat?arg='+hash+'&timeout='+timeout+'s'
     console.debug('url: '+url);
     return fetchRespCatch(url)
 	.then(consLog(callee))
@@ -677,8 +772,9 @@ function ipfsLogAppend(mfspath,record) {
       .then( _ => getMFSFileSize(mfspath))
       .then( offset => {
             console.debug(mfspath,': offset=',offset);
-            let url = api_url + 'files/write?arg=' + mfspath + '&raw-leaves=true&cid-base=base58btc&create=true&truncate=false&offset='+offset;
-            return fetchPostText(url, record+"\n")
+            //let url = api_url + 'files/write?arg=' + mfspath + '&raw-leaves=true&cid-base=base58btc&create=true&truncate=false&offset='+offset;
+            let url = api_url + 'files/write?arg=' + mfspath + '&cid-base=base58btc&create=true&truncate=false&offset='+offset;
+            return fetchPostText(url, record) // /!\ no "\n" is inserted by default, please add your own if necessary !
             .then( _ => getMFSFileHash(mfspath)) 
             })
    .catch(logError)
@@ -722,7 +818,7 @@ function createParent(path) {
 	.catch(consLog('Error: '))
 }
 
-function getMFSFileSize(mfspath) {
+function getMFSFileSize(mfspath) { // size returned by stat depend on integrity of body ...
    let [callee, caller] = functionNameJS(); // logInfo("message !")
    console.debug(callee+'.input.mfspath:',mfspath);
 
@@ -732,6 +828,51 @@ function getMFSFileSize(mfspath) {
       .then(consLog('getMFSFileSize'))
       .then( json => { return (typeof json.Size == 'undefined') ? 0 : json.Size } )
       .catch(consLog('getMFSFileSize'))
+}
+
+function ipfsMkdir() {
+   var url = api_url + 'object/new?arg=unifs-dir';
+   return fetch(url,{method:'POST'})
+      .then( resp => resp.json() )
+      .then( json => { return json.Hash; })
+   .catch(logError)
+}
+
+function mfsRemove(mfspath) {
+   var url = api_url + 'files/rm?arg='+mfspath+'&recursive=true';
+   return fetch(url,{method:'POST'})
+      .then( resp => resp.json() )
+   .catch(logError)
+}
+function mfsCopy(hash,mfspath) {
+   var url = api_url + 'files/cp?arg='+mfspath;
+   return fetch(url,{method:'POST'})
+      .then( resp => resp.json() )
+}
+async function ipfsCopy(mfspath,hash) {
+   let link = await getMFSFileHash(mfspath);
+   let name = basename(mfspath);
+   if (link != qmNull) {
+     var url = api_url + 'object/patch/add-link?arg'+hash+'&arg='+name+'&arg='+mfspath;
+     return fetch(url,{method:'POST'})
+     .then( resp => resp.json() )
+     .then( json => { return json.Hash; })
+   .catch(logError)
+   }
+}
+
+function mfsExists(mfspath) {
+   var url = api_url + 'files/stat?arg='+mfspath+'&hash=true'
+   return fetch(url,{method:'POST'})
+      .then( resp => resp.json() )
+      .then( json => {
+            if (typeof json.Hash == 'undefined') {
+              return false
+            } else {
+              return [true,json.Hash]
+            }
+        })
+   .catch(logError)
 }
 
 function getMFSFileHash(mfspath) {
@@ -744,7 +885,7 @@ function getMFSFileHash(mfspath) {
       .then( json => {
             if (typeof json.Hash == 'undefined') {
             if (typeof(qmEmpty) != 'undefined') { return qmEmpty }
-            else { return 'QmYYY' }
+            else { console.debug(callee+'.json.Hash: undefined'); return qmNull }
             } else {
             return json.Hash
             }
