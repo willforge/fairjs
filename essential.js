@@ -25,6 +25,16 @@ function load(e) {
     });
 }
 
+function basename(f) {
+  let s = '/';
+  let p = f.lastIndexOf(s,f.length-2);
+  let b = f.substr(p+1);
+  console.debug('basename.f:',f)
+  console.debug('basename.p:',p)
+  console.debug('basename.b:',b)
+  return b;
+}
+
 function callFunctionWhenEnterEvent(event,callback,arg) {
     let [callee, caller] = functionNameJS();
     console.debug(callee+'.input.event:',event);
@@ -204,11 +214,11 @@ function validateRespNoCatch(resp) { // validate: OK ? text : json
       return Promise.resolve(
          resp.json() // errors are in json format
          .then( json => {
-           if (typeof(json.Code) != 'undefined') {
-			console.debug(callee+'.validateResp.'+json.Type+': ',json.Code,json.Message)
-           }
-           return json;
-       }));
+            if (typeof(json.Code) != 'undefined') {
+            console.debug(callee+'.validateResp.'+json.Type+': ',json.Code,json.Message)
+            }
+            return json;
+         }));
 
     }
 }
@@ -224,23 +234,28 @@ function validateResp(resp) { // validate: OK ? text : json
         .then( text => { // ! can be text of json 
            if (text.match(/^{/)) { // test if it is in fact a json}
              let json = JSON.parse(text);
-			console.debug(callee+'.ok.json: ',json);
+          	 console.debug(callee+'.ok.json: ',json);
              return json;
            } else {
-			console.debug(callee+'.ok.text: ',text.substr(0,46)+'...',{text});
+             console.debug(callee+'.ok.text: ',text.substr(0,46)+'...',{text});
              return text;
            }
         }));
     } else {
-	console.debug(callee+'.!ok.resp.statusText: ',resp.statusText)
+      console.debug(callee+'.!ok.resp.statusText: ',resp.statusText)
+      console.debug(callee+'.resp: ',resp)
       return Promise.reject(
          resp.json() // errors are in json format
          .then( json => {
+           console.debug(callee+'.json: ',json)
            if (typeof(json.Code) != 'undefined') {
-			console.debug(callee+'.jsonType:'+json.Type+': ',json.Code,json.Message)
+             console.debug(callee+'.jsonType:'+json.Type+': ',json.Code,json.Message)
            }
            return json;
-       }));
+       })
+       .catch(console.error)
+
+       );
 
     }
 }
@@ -407,8 +422,8 @@ function getTic() {
 
 function getDate() {
   let today = new Date();
-  console.debug('Date:',today.toUTCString())
-  console.debug('Date:',today.toISOString())
+  // console.debug('Date:',today.toUTCString())
+  // console.debug('Date:',today.toISOString())
   //var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
   var date = new Intl.DateTimeFormat().format(today)
   return date
@@ -417,7 +432,7 @@ function getDate() {
 function getTime() {
   let today = new Date();
   let TZ = - today.getTimezoneOffset() / 60;
-  console.debug('TZ:',TZ)
+  // console.debug('TZ:',TZ)
   var time = today.getHours()+':'+('0'+today.getMinutes()).slice(-2)+':'+('0'+today.getSeconds()).slice(-2)+'.'+('00'+today.getMilliseconds()).slice(-3)+' '+('0'+TZ).slice(-2);
   return time
 }
@@ -613,14 +628,14 @@ function consLog(what) {
     let [callee, caller] = functionNameJS();
     console.debug(callee+'.input.what:',what);
 
-    return data => { console.log(what+': ',data); return data; }
+    return log => { console.log(what+'.log: ',log); return log; }
 }
 
 function consErr(what) {
     let [callee, caller] = functionNameJS();
     console.debug(callee+'.input.what:',what);
 
-    return err => { console.error(what+': ',err); return err; }
+    return err => { console.error(what+'.err: ',err); return err; }
 }
 
 function logInfo(msg) {

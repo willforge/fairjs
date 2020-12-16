@@ -110,6 +110,39 @@ async function notify(ev) {
  return qm
 }
 
+async function publish_root() {
+  let [callee, caller] = functionNameJS();
+  // assummed identity is previously set
+
+
+  /* backup previous publish */
+  let [prev_exists,qmprev] = await mfsExists('/.../published')
+  if (prev_exists) {
+    console.info(callee+'.info: previous backup');
+    await mfsRemove('/.../published/_prev')
+    await mfsCopy(qmprev,'/.../published/_prev')
+    await mfsRemove('/.../published/_prev/_prev')
+  }
+  /* create new root */
+  console.info(callee+'.info: create root');
+  let emptyd = await ipfsMkdir();
+
+  // add /...
+  let qm = await ipfsCopy('/...',emptyd)
+  qm = await ipfsCopy('/my',qm);
+  qm = await ipfsCopy('/public',qm);
+  qm = await ipfsCopy('/etc',qm);
+  console.debug(callee+'.qm:',qm);
+  ipfsNamePublish('self','/ipfs/'+qm);
+
+  await mfsRemove('/.../published')
+  await mfsCopy(qm,'/.../published')
+
+ qm = await getMFSFileHash('/')
+ console.debug(callee+'.qm:',qm);
+ return qm;
+}
+
 async function get_mbox() {
  let mbox = await getJsonByMFSPath('/my/outbox/'+envelop.msgid+'.json')
  return mbox;

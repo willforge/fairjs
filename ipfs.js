@@ -15,6 +15,7 @@
 
 const cfg_url = 'http://127.0.0.1:1124/config.json';
 const qmNull = 'QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n';
+var config;
 var promisedConfig = load_config(cfg_url);
 var promisedPeerId;
 
@@ -47,37 +48,45 @@ console.log(thisscript.name+': '+thisscript.src+' ('+thisscript.version+')');
       console.log('core:',core);
  }
 
-promisedConfig.then( _ => {
-if (typeof(api_url) == 'undefined') {
-   if (typeof(config) != 'undefined') {
-      api_url = config.api_url;
-   } else {
-      api_url = 'http://127.0.0.1:5001/api/v0';
-   }
-   console.log('api_url: ',api_url)
-}
-if (typeof(gw_url) == 'undefined') {
-   if (typeof(config) != 'undefined') {
-      gw_url = config.gw_url;
-   } else {
-      gw_url = 'http://127.0.0.1:8080';
-   }
-   console.log('gw_url: ',gw_url)
-}
-
-
-var container = document.getElementsByClassName('container');
-if (typeof(ipfsversion) == 'undefined') {
-    ipfsVersion().then( v => { window.ipfsversion = v })
-} else {
-    let [callee, caller] = functionNameJS();
-    console.debug("TEST."+callee+'.ipfsversion: ',ipfsversion);
-}
-
- promisedPeerId = getPeerId();
-
+promisedConfig.then( cfg => {
+ console.log('ipfs.promisedConfig:',promisedConfig);
+ console.log('ipfs.promisedConfig.then.config:',cfg);
+ configure(cfg);
 })
 .catch(console.error);
+
+function configure(cfg) {
+
+   if (typeof(api_url) == 'undefined') {
+      if (typeof(cfg) != 'undefined') {
+         api_url = cfg.api_url;
+      } else {
+         api_url = 'http://127.0.0.1:5001/api/v0/';
+      }
+      console.log('api_url: ',api_url)
+   }
+   if (typeof(gw_url) == 'undefined') {
+      if (typeof(cfg) != 'undefined') {
+         gw_url = cfg.gw_url;
+      } else {
+         gw_url = 'http://127.0.0.1:8080';
+      }
+      console.log('gw_url: ',gw_url)
+   }
+
+   var container = document.getElementsByClassName('container');
+   if (typeof(ipfsversion) == 'undefined') {
+      ipfsVersion().then( v => { window.ipfsversion = v })
+   } else {
+      let [callee, caller] = functionNameJS();
+      console.debug("TEST."+callee+'.ipfsversion: ',ipfsversion);
+   }
+
+   promisedPeerId = getPeerId();
+
+}
+
+
 // --------------------------------------------
 
 function ipfsVersion() {
@@ -274,18 +283,16 @@ function ipfsNamePublish(k,v) {
     console.debug(callee+'.input.v:',v);
     var url = api_url + 'name/publish?key='+k+'&arg='+v+'&allow-offline=1&resolve=0';
     return fetchGetPostJson(url)
-	.then(consLog('ipfsNamePublish'))
 	.then( json => { return json.Value })
-	.catch(logError)
+	.catch(console.error)
 }
 function ipfsNameResolve(k) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.k:',k);
     var url = api_url + 'name/resolve?arg='+k;
     return fetchGetPostJson(url)
-    .then(consLog(callee))
     .then( json => { return json.Path } )
-	  .catch(logError)
+	  .catch(console.error)
    
 }
 
@@ -772,8 +779,7 @@ function ipfsLogAppend(mfspath,record) {
       .then( _ => getMFSFileSize(mfspath))
       .then( offset => {
             console.debug(mfspath,': offset=',offset);
-            //let url = api_url + 'files/write?arg=' + mfspath + '&raw-leaves=true&cid-base=base58btc&create=true&truncate=false&offset='+offset;
-            let url = api_url + 'files/write?arg=' + mfspath + '&cid-base=base58btc&create=true&truncate=false&offset='+offset;
+            let url = api_url + 'files/write?arg=' + mfspath + '&raw-leaves=true&cid-base=base58btc&create=true&truncate=false&offset='+offset;
             return fetchPostText(url, record) // /!\ no "\n" is inserted by default, please add your own if necessary !
             .then( _ => getMFSFileHash(mfspath)) 
             })
@@ -820,9 +826,8 @@ function createParent(path) {
 
 function getMFSFileSize(mfspath) { // size returned by stat depend on integrity of body ...
    let [callee, caller] = functionNameJS(); // logInfo("message !")
-   console.debug(callee+'.input.mfspath:',mfspath);
-
    var url = api_url + 'files/stat?arg=' + mfspath + '&size=true'
+   console.debug(callee+'.url:',url);
       return fetch(url,{method:'POST'})
       .then( resp => resp.json() )
       .then(consLog('getMFSFileSize'))
@@ -831,29 +836,43 @@ function getMFSFileSize(mfspath) { // size returned by stat depend on integrity 
 }
 
 function ipfsMkdir() {
-   var url = api_url + 'object/new?arg=unifs-dir';
+   let [callee, caller] = functionNameJS(); // logInfo("message !")
+   var url = api_url + 'object/new?arg=unixfs-dir';
    return fetch(url,{method:'POST'})
+   //  .then( resp => { console.log(callee+'.resp:'); return resp; } )
       .then( resp => resp.json() )
       .then( json => { return json.Hash; })
-   .catch(logError)
+   .catch(console.error)
 }
 
 function mfsRemove(mfspath) {
    var url = api_url + 'files/rm?arg='+mfspath+'&recursive=true';
    return fetch(url,{method:'POST'})
-      .then( resp => resp.json() )
-   .catch(logError)
+      .then(validateResp)
+   .catch(console.erroconsole.error)
 }
 function mfsCopy(hash,mfspath) {
-   var url = api_url + 'files/cp?arg='+mfspath;
+   let [callee, caller] = functionNameJS(); // logInfo("message !")
+   console.log(callee+'.input.hash:',hash);
+   var url = api_url + 'files/cp?arg=/ipfs/'+hash+'&arg='+mfspath;
+   console.log(callee+'.url:',url);
    return fetch(url,{method:'POST'})
-      .then( resp => resp.json() )
+   .then( resp => resp.text() )
+   .then( text => { console.log(callee+'.text:',text); })
+   .then( _ => { return getMFSFileHash(mfspath); })
+   .catch(console.error)
+
+
 }
 async function ipfsCopy(mfspath,hash) {
+   let [callee, caller] = functionNameJS(); // logInfo("message !")
    let link = await getMFSFileHash(mfspath);
+   console.log(callee+'.link:',link);
    let name = basename(mfspath);
+   console.log(callee+'.name:',name);
    if (link != qmNull) {
-     var url = api_url + 'object/patch/add-link?arg'+hash+'&arg='+name+'&arg='+mfspath;
+     var url = api_url + 'object/patch/add-link?arg='+hash+'&arg='+name+'&arg='+link;
+     console.log(callee+'.url:',url);
      return fetch(url,{method:'POST'})
      .then( resp => resp.json() )
      .then( json => { return json.Hash; })
@@ -862,17 +881,19 @@ async function ipfsCopy(mfspath,hash) {
 }
 
 function mfsExists(mfspath) {
+   let [callee, caller] = functionNameJS(); // logInfo("message !")
    var url = api_url + 'files/stat?arg='+mfspath+'&hash=true'
    return fetch(url,{method:'POST'})
+      .then( resp => { console.log(callee+'.resp:'); return resp; } )
       .then( resp => resp.json() )
       .then( json => {
             if (typeof json.Hash == 'undefined') {
-              return false
+              return [false,null]
             } else {
               return [true,json.Hash]
             }
         })
-   .catch(logError)
+   .catch(console.error)
 }
 
 function getMFSFileHash(mfspath) {
