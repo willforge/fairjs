@@ -849,7 +849,7 @@ function mfsRemove(mfspath) {
    var url = api_url + 'files/rm?arg='+mfspath+'&recursive=true';
    return fetch(url,{method:'POST'})
       .then(validateResp)
-   .catch(console.erroconsole.error)
+   .catch(console.error)
 }
 function mfsCopy(hash,mfspath) {
    let [callee, caller] = functionNameJS(); // logInfo("message !")
