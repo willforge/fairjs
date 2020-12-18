@@ -295,6 +295,22 @@ function ipfsNameResolve(k) {
 	  .catch(console.error)
    
 }
+function ipfsResolve(ipath) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    console.debug(callee+'.input.ipath:',ipath);
+    var url = api_url + 'resolve?arg='+ipath+'&timeout=10s';
+    return fetchGetPostJson(url)
+    .then( json => {
+       if (typeof(json) != 'undefined') {
+        return json.Path
+        } else {
+         return undefined
+        }
+    } )
+	  .catch(console.error)
+   
+}
+
 
 function ipfsGetToken(string) {
   let [callee, caller] = functionNameJS(); // logInfo("message !")
@@ -308,7 +324,8 @@ function ipfsGetToken(string) {
 }
 function ipfsFindProvs(key) {
    let [callee, caller] = functionNameJS();
-   return fetch(api_url+'dht/findprovs?arg='+key+'&verbose=true&num-providers=20&timeout=61s',{ method:'POST', mode: 'cors' })
+   // num-providers=20&timeout=61s
+   return fetch(api_url+'dht/findprovs?arg='+key+'&verbose=true&num-providers=3&timeout=5s',{ method:'POST', mode: 'cors' })
       .then( resp => resp.text() )
       .then( text => {
            let objs = text.replace(/(\n|\r)+$/, '').split("\n");

@@ -138,7 +138,7 @@ async function publish_root() {
   await mfsRemove('/.../published')
   await mfsCopy(qm,'/.../published')
 
- qm = await getMFSFileHash('/')
+ //qm = await getMFSFileHash('/')
  console.debug(callee+'.qm:',qm);
  return qm;
 }

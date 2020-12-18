@@ -275,8 +275,8 @@ function fetchPostBinary(url, content) {
 
 function fetchPostText(url, content) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.url:',url);
-    console.debug(callee+'.input.content:',content);
+    console.info(callee+'.input.url:',url);
+    console.info(callee+'.input.content:',{ content });
 
      let form = new FormData();
      form.append('file', content)
