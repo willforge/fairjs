@@ -298,7 +298,7 @@ function ipfsNameResolve(k) {
 function ipfsResolve(ipath) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.input.ipath:',ipath);
-    var url = api_url + 'resolve?arg='+ipath+'&timeout=10s';
+    var url = api_url + 'resolve?arg='+ipath+'&timeout=61s';
     return fetchGetPostJson(url)
     .then( json => {
        if (typeof(json) != 'undefined') {
