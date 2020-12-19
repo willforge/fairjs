@@ -17,7 +17,7 @@ function TBD(m) { alert('TBD:'+m) }
 
 function load(e) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.e:',e);
+    console.debug(callee+'.inputs:',{"e":e});
     
     return new Promise(function(resolve, reject) {
         e.onload = resolve
@@ -37,9 +37,7 @@ function basename(f) {
 
 function callFunctionWhenEnterEvent(event,callback,arg) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.event:',event);
-    console.debug(callee+'.input.callback:',callback);
-    console.debug(callee+'.input.arg:',arg);
+    console.debug(callee+'.inputs:',{"event":event,"callback":callback,"arg":arg});
 
     if(event.keyCode === 13) {
 	console.debug(callee+'.calling ',callback,'with with arg: ',arg)
@@ -51,7 +49,7 @@ function callFunctionWhenEnterEvent(event,callback,arg) {
 
 function getValueOfName(name) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.name:',name);
+    console.debug(callee+'inputs:',[name]);
 
    let elements = document.getElementsByName(name)
     console.debug(callee+'.elements: '+name+" \u21A6",elements);
@@ -162,33 +160,32 @@ function serialize(form) {
 
 function fetchRespCatch(url,data) {
     let [callee, caller] = functionNameJS();
-    console.debug(caller+'.'+callee+'.input.url:',url);
 
   if(typeof(data) != 'undefined') {
-       console.debug(caller+'.'+callee+'.input.data:',data);
+       console.debug(caller+'.'+callee+'.inputs:',{url,data});
     return fetchPostBinary(url,data)
     .then(validateResp)
-    .catch(consErr('fetchRespCatch.obj'))
+    .catch(consErr(caller+'.fetchRespCatch.GET.obj'))
   } else {
+    console.debug(caller+'.'+callee+'.inputs:',{url});
     return fetchGetPostResp(url)
     .then(validateResp)
-    .catch(consErr('fetchRespCatch.obj'))
+    .catch(consErr(caller+'.fetchRespCatch.POST.obj'))
   }
 }
 
 function fetchRespNoCatch(url,data) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.url:',url);
-    console.debug(callee+'.input.data:',data);
+    console.debug(callee+'.inputs',{"url":url,"data":data});
 
   if(typeof(data) != 'undefined') {
     return fetchPostBinary(url,data)
     .then(validateRespNoCatch)
-    .catch(consLog('!! fetchRespNoCatch.postcatch.obj'))
+    .catch(consLog('!! '+caller+'.fetchRespNoCatch.postcatch.obj'))
   } else {
     return fetchGetPostResp(url)
     .then(validateRespNoCatch)
-    .catch(consLog('!! fetchRespNoCatch.getcatch.obj'))
+    .catch(consLog('!! '+caller+'.fetchRespNoCatch.getcatch.obj'))
   }
 }
 
@@ -202,15 +199,15 @@ function validateRespNoCatch(resp) { // validate: OK ? text : json
         .then( text => { // ! can be text of json 
            if (text.match(/^{/)) { // test if it is in fact a json}
              let json = JSON.parse(text);
-			console.debug(callee+'.ok.json:',json);
+			console.debug(callee+'.ok.json: %o',[{json}]);
              return json;
            } else {
-			console.debug(callee+'.ok.text:',text);
+			console.debug(callee+'.ok.text: %o',[{text}]);
              return text;
            }
         }));
     } else {
-	console.debug(callee+'.!ok.resp.statusText:',resp.statusText)
+	console.debug(callee+'.!ok.resp: %o',{"status":resp.status,"statusText":resp.statusText})
       return Promise.resolve(
          resp.json() // errors are in json format
          .then( json => {
@@ -225,8 +222,7 @@ function validateRespNoCatch(resp) { // validate: OK ? text : json
 
 function validateResp(resp) { // validate: OK ? text : json
     let [callee, caller] = functionNameJS();
-    console.debug(caller+'.'+callee+'.Error().stack:',Error().stack);
-    console.debug(caller+'.'+callee+'.input.resp:',resp);
+    console.debug(caller+'.'+callee+': %o',[{"input.resp":resp,"stack":Error().stack.split("\n")}]);
 
     if (resp.ok) {
       return Promise.resolve(
@@ -237,7 +233,7 @@ function validateResp(resp) { // validate: OK ? text : json
           	 console.debug(callee+'.ok.json: ',json);
              return json;
            } else {
-             console.debug(callee+'.ok.text: ',text.substr(0,46)+'...',{text});
+             console.info(callee+'.ok.text: %o',[text.substr(0,32)+'...',{"details":text}]);
              return text;
            }
         }));
@@ -262,21 +258,19 @@ function validateResp(resp) { // validate: OK ? text : json
 
 function fetchPostBinary(url, content) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.url:',url);
-    console.debug(callee+'.input.content:',content);
+    console.debug('%s.%s: %o',caller,callee,[{"url":url,"content":content}]);
 
      // right now is same as fetchPostText
      let form = new FormData(); // need encodeURI ... ??
      form.append('file', content)
      return fetch(url, { method: "POST", mode: 'cors', body: form })
-     .then(consLog('fetchPostBinary.resp: '))
-     .catch(consLog('fetchPostBinary.catch.resp: '))
+     .then(console.log)
+     .catch(console.warn)
 }
 
 function fetchPostText(url, content) {
     let [callee, caller] = functionNameJS();
-    console.info(callee+'.input.url:',url);
-    console.info(callee+'.input.content:',{ content });
+    console.debug('%s.%s: %o',caller,callee,[{"url":url,"content":content}]);
 
      let form = new FormData();
      form.append('file', content)
@@ -285,8 +279,7 @@ function fetchPostText(url, content) {
 
 function fetchPostJson(url, obj) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.url:',url);
-    console.debug(callee+'.input.obj:',obj);
+    console.debug('%s.%s: %o',caller,callee,[{"url":url,"obj":obj}]);
 
      let content = JSON.stringify(obj)
     console.debug(callee+'.content:',content);
@@ -298,66 +291,66 @@ function fetchPostJson(url, obj) {
 
 function fetchGetPostResp(url) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.url:',url);
+    console.debug('%s.%s: %o',caller,callee,{"url":url});
 
    return fetch(url, { method: "POST"} )
-   .catch(consLog('fetchGetPostResp.catch.resp: '))
+   .catch(console.warn)
 }
 
 function fetchGetResp(url) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.url:',url);
+    console.debug('%s.%s: %o',caller,callee,{"url":url});
 
    return fetch(url, { method: "GET"} )
-   .catch(consLog('fetchGetResp.catch.resp: '))
+   .catch(console.warn)
 }
 
 function fetchGetPostBinary(url) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.url:',url);
+    console.debug('%s.%s: %o',caller,callee,{"url":url});
 
     return fetch(url, { method: "POST"} )
 	.then(validateStatus)
 	.then( resp =>  resp.blob() )
 	.then( blob => { console.debug(callee+'.blob:',blob); return blob; })
-	.catch(consLog('fetchGetPostBinary.catch.resp: '))
+	.catch(console.warn)
 }
 
 function fetchGetPostText(url) {
-    let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.url:',url);
+   let [callee, caller] = functionNameJS();
+   console.debug('%s.%s: %o',caller,callee,{"url":url});
 
    return fetch(url, { method: "POST"} )
-   .then(validateStatus)
-   .then( resp => resp.text() )
-   .catch(consLog('fetchGetPostText.catch.resp: '))
+      .then(validateStatus)
+      .then( resp => resp.text() )
+      .catch(console.warn)
 }
 
 function fetchGetText(url) {
+   console.debug('%s.%s: %o',caller,callee,{"url":url});
    return fetch(url, { method: "GET"} )
-   .then(validateStatus)
-   .then( resp => resp.text() )
-   .catch(consLog('fetchGetText.catch.resp: '))
+      .then(validateStatus)
+      .then( resp => resp.text() )
+      .catch(console.warn)
 }
 
 function fetchGetPostJson(url) {
-    let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.url:',url);
-     return fetch(url,{ method: "POST"} )
-   .then(validateStatus)
-   .then( resp => resp.json() )
-	.then( json => { console.debug(caller+'.'+callee+'.json:',json); return json } )
-	.catch(console.error)
-	//.catch(consLog('fetchGetPostJson.catch.resp: '))
+   let [callee, caller] = functionNameJS();
+   console.debug('%s.%s: %o',caller,callee,{"url":url});
+   return fetch(url,{ method: "POST"} )
+      .then(validateStatus)
+      .then( resp => resp.json() )
+      .then( json => { console.debug(caller+'.'+callee+'.json:',json); return json } )
+      .catch(console.error)
 }
 function fetchGetJson(url) {
-    let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.url:',url);
+   let [callee, caller] = functionNameJS();
+   console.debug('%s.%s: %o',caller,callee,{"url":url});
 
-     return fetch(url,{ method: "GET"} )
-   .then(validateStatus)
-   .then( resp => resp.json() )
-   .catch(consLog('fetchGetJson.catch.resp: '))
+   return fetch(url,{ method: "GET"} )
+      .then(validateStatus)
+      .then( resp => resp.json() )
+      .catch(console.error)
 }
 
 function getIp() {
@@ -407,7 +400,7 @@ function getCloudFlareIp() {
 
 function list2json(d) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.d:',d);
+    console.debug(callee+'.input:',[{d}]);
 
   let data = d.replace(/[\r\n]+/g, '","').replace(/\=+/g, '":"');
       data = '{"' + data.slice(0, data.lastIndexOf('","')) + '"}';
@@ -439,10 +432,7 @@ function getTime() {
 
 function getSpot(tic, ip, peerId, nonce) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.tic:',tic);
-    console.debug(callee+'.input.ip:',ip);
-    console.debug(callee+'.input.peerId:',peerId);
-    console.debug(callee+'.input.nonce:',nonce);
+    console.debug(callee+'.inputs:',[tic,ip,peerId,nonce]);
 
      var ipInt = dot2Int(ip);
      var idInt = qm2Int(peerId);
@@ -458,7 +448,7 @@ function getSpot(tic, ip, peerId, nonce) {
 
 function dot2Int(dot) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.dot:',dot);
+    console.debug(callee+'.inputs:',[dot]);
 
     let d = dot.split('.');
     return ((((((+d[0])*256)+(+d[1]))*256)+(+d[2]))*256)+(+d[3]);
@@ -466,7 +456,7 @@ function dot2Int(dot) {
 
 function qm2Int(qm) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.qm:',qm);
+    console.debug(callee+'.inputs:',[qm]);
 
   plain = base58.decode(qm)
   let q16 = plain.to_hex();
@@ -478,7 +468,7 @@ function qm2Int(qm) {
 
 function to_hex(s) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.s:',s);
+    console.debug(callee+'.inputs:',[s]);
 
     var r = '';
     for (var i = 0; i < s.length; i++) {
@@ -495,13 +485,12 @@ function to_hex(s) {
 
 function validateStatus(resp) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.resp:',resp);
+   console.debug('%s.%s: %o',caller,callee,{"resp":resp});
 
   if (resp.status >= 200 && resp.status < 300) {
     return Promise.resolve(resp)
   } else {
-	console.debug(callee+'.resp.status:',resp.status)
-	console.debug(callee+'.resp.statusText:',resp.statusText)
+	console.debug(callee+'.resp: %o',{"status":resp.status,"statusText":resp.statusText})
     return Promise.reject(resp)
     //return Promise.reject(new Error(resp.statusText))
   }
@@ -509,15 +498,14 @@ function validateStatus(resp) {
 
 function replaceNameInGlobalContainer(name) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.name:',name);
+    console.debug(callee+'.inputs:',{"name":name});
 
   return value => { container.innerHTML = container.innerHTML.replace(new RegExp(':'+name,'g'),value); return value; }
 }
 
 function replaceNameInClass(name,where) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.name:',name);
-    console.debug(callee+'.input.where:',where);
+    console.debug(callee+'.inputs:',{"name":name,"where":where});
     
     return value => {
    if (typeof(callback) != 'undefined') {
@@ -536,8 +524,7 @@ function replaceNameInClass(name,where) {
 
 function replaceInTagsByClassName(name,value) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.name:',name);
-    console.debug(callee+'.input.value:',value);
+    console.debug(callee+'.inputs:',{"name":name,"value":value});
 
    let elements = document.getElementsByClassName(name);
    for (let i=0; i<elements.length; i++) {
@@ -578,7 +565,7 @@ function functionNameJS () {
        case "Chrome":
           stackArray = stack.split('at ');
           callee = stackArray[2].split(' ')[0];
-          if (stackArray[3] == undefined) {
+          if (typeof(stackArray[3]) == 'undefined') {
              caller = "main";
           }
           else{
@@ -620,37 +607,30 @@ function navigatorName () {
     return result;
 }
 
-console.debug = console.log
+// console.debug = console.log
 // console.debug = function (_) => { console.log(_); return _; }
 // function consDebug(_) { _ => { console.log(_); return _; }
 
 function consLog(what) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.what:',what);
-
-    return log => { console.log(what+'.log: ',log); return log; }
+    return log => { console.log(caller+'.log: ',log); return log; }
 }
 
 function consErr(what) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.what:',what);
-
-    return err => { console.error(what+'.err: ',err); return err; }
+    return err => { console.error(caller+'.err: ',err); return err; }
 }
 
 function logInfo(msg) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.msg:',msg);
-
+    console.info(caller+'.info:',{"msg":msg});
    let stack = new Error().stack;
-    console.debug(callee+'.stack',stack)
+    console.debug(callee+'.stack',stack.split("\n"))
 }
 
 function logError(what,err,obj) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.what:',what);
-    console.debug(callee+'.input.err:',err);
-    console.debug(callee+'.input.obj:',obj);
+    console.info(callee+'.inputs:',{"what":what,"err":err,"obj":obj});
 
   let errorMsg = {
     '-1':'Unknown Error'
@@ -676,15 +656,14 @@ function logError(what,err,obj) {
 
 function isErr(err, callback) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.input.err:',err);
-    console.debug(callee+'.input.callback:',callback);
+    console.debug(callee+'.inputs::',{"err":err,"callback":callback});
 
    if (err != null) {
       if (err.stack != null) {
          var stackArray = err.stack.split("\n");
          var stackLine = new Error().stack.split("\n")[2];
          stackArray.splice(1,0,StackLine); 
-         err.stack = stackArry.join("\n");
+         err.stack = stackArray.join("\n");
       } else {
          err = new Error(err);
       }
