@@ -1,6 +1,7 @@
 // ipfs routines
 //
 // deps:
+//  - config.js
 //  - essential.js
 //  - sha256.min.js
 //
@@ -12,13 +13,12 @@
 // Log:
 //  console.log => console.debug by Emile Achadde 27 août 2020 at 16:15:22+02:00
 // ---
-
-const cfg_url = 'http://127.0.0.1:1124/config.json';
-const api_addr = ['/api/v0/config&arg=Addresses.API'];
+configure(config);
 
 const qmNull = 'QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n';
-var config;
-var promisedConfig = load_config(cfg_url);
+//var config;
+//const cfg_url = 'http://127.0.0.1:1124/config.json';
+//var promisedConfig = load_config(cfg_url);
 var promisedPeerId;
 
 
@@ -26,9 +26,9 @@ var thisscript = document.currentScript;
 thisscript.version = '1.1';
 thisscript.name = thisscript.src.replace(RegExp('.*/([^/]+)$'),"$1");
 
-// if experimental then switch to '../' (i.e. use local js)
+/* if experimental then switch to '../' (i.e. use local js)
 if (thisscript.className.match('exp') && document.location.href.match('michelc') ) {
-   let src = thisscript.src.replace(RegExp('.*/github\.(?:com|io)/'),'../');
+   let src = thisscript.src.replace(RegExp('.*'+'/github\.(?:com|io)/'),'../');
    thisscript.remove();
    var script = document.createElement('script');
    script.src = src;
@@ -36,6 +36,7 @@ if (thisscript.className.match('exp') && document.location.href.match('michelc')
    document.getElementsByTagName('head')[0].appendChild(script);
 }
 
+*/
 console.log(thisscript.name+': '+thisscript.src+' ('+thisscript.version+')');
 
 // --------------------------------------------;
@@ -50,12 +51,14 @@ console.log(thisscript.name+': '+thisscript.src+' ('+thisscript.version+')');
       console.log('core:',core);
  }
 
+/* 
 promisedConfig.then( cfg => {
  console.log('ipfs.promisedConfig:',promisedConfig);
  console.log('ipfs.promisedConfig.then.config:',cfg);
  configure(cfg);
 })
 .catch(console.error);
+*/
 
 function configure(cfg) {
 
