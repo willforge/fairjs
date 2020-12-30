@@ -14,6 +14,8 @@
 // ---
 
 const cfg_url = 'http://127.0.0.1:1124/config.json';
+const api_addr = ['/api/v0/config&arg=Addresses.API'];
+
 const qmNull = 'QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n';
 var config;
 var promisedConfig = load_config(cfg_url);
@@ -74,12 +76,12 @@ function configure(cfg) {
       console.info('gw_url: ',gw_url)
    }
 
-   var container = document.getElementsByClassName('container');
+   //var container = document.getElementsByClassName('container');
    if (typeof(ipfsversion) == 'undefined') {
       ipfsVersion().then( v => { window.ipfsversion = v })
    } else {
       let [callee, caller] = functionNameJS();
-      console.debug("TEST."+callee+'.ipfsversion: ',ipfsversion);
+      console.info(caller+'.'+callee+'.ipfsversion: ',ipfsversion);
    }
 
    promisedPeerId = getPeerId();
@@ -321,7 +323,7 @@ function ipfsGetToken(string) {
 function ipfsFindProvs(key) {
    let [callee, caller] = functionNameJS();
    // num-providers=20&timeout=61s
-   return fetch(api_url+'dht/findprovs?arg='+key+'&verbose=true&num-providers=3&timeout=5s',{ method:'POST', mode: 'cors' })
+   return fetch(api_url+'dht/findprovs?arg='+key+'&verbose=true&num-providers=4&timeout=5s',{ method:'POST', mode: 'cors' })
       .then( resp => resp.text() )
       .then( text => {
            let objs = text.replace(/(\n|\r)+$/, '').split("\n");
@@ -713,8 +715,8 @@ async function getIpfsWrapperHash(name,hash) {
     //name = name.substring(0,name.indexOf('/'));
     name = name.split('/')[0]
     console.debug(callee+'.name:',name);
-    const empty = 'QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn';
-    var url = api_url + 'object/patch/add-link?arg='+empty +'&arg=' + name + '&arg=' + hash;
+    const emptyd = 'QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn';
+    var url = api_url + 'object/patch/add-link?arg='+emptyd +'&arg=' + name + '&arg=' + hash;
     let obj = await fetch(url,{ method: "POST"} ).then( resp => resp.json() ).catch(console.error)
     console.debug(callee+'.obj:',obj);
     let whash = obj.Hash;

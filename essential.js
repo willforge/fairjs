@@ -413,20 +413,26 @@ function getTic() {
    return +result
 }
 
-function getDate() {
-  let today = new Date();
-  // console.debug('Date:',today.toUTCString())
-  // console.debug('Date:',today.toISOString())
-  //var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-  var date = new Intl.DateTimeFormat().format(today)
-  return date
+function getDate(tics) {
+  let [callee, caller] = functionNameJS();
+  // console.debug('Date:',date.toUTCString())
+  // console.debug('Date:',date.toISOString())
+  //var stamp = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+  var stamp = new Intl.DateTimeFormat().format(tics)
+  //console.debug(callee+'.stamp:',stamp);
+  return stamp
 }
 
-function getTime() {
-  let today = new Date();
-  let TZ = - today.getTimezoneOffset() / 60;
+function getTime(tics) {
+  let [callee, caller] = functionNameJS();
+  let date = new Date();
+  let TZ = - date.getTimezoneOffset() / 60;
   // console.debug('TZ:',TZ)
-  var time = today.getHours()+':'+('0'+today.getMinutes()).slice(-2)+':'+('0'+today.getSeconds()).slice(-2)+'.'+('00'+today.getMilliseconds()).slice(-3)+' '+('0'+TZ).slice(-2);
+  if (typeof(tics) != 'undefined') {
+      date.setTime(tics);
+  }
+  var time = date.getHours()+':'+('0'+date.getMinutes()).slice(-2)+':'+('0'+date.getSeconds()).slice(-2)+'.'+('00'+date.getMilliseconds()).slice(-3)+' '+('0'+TZ).slice(-2);
+  //console.debug(callee+'.time:',time);
   return time
 }
 
