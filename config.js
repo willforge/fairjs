@@ -1,4 +1,4 @@
 window.config = {
- 'gw_url': "http://127.0.0.113:8080",
- 'api_url': "http://127.0.0.113:5001/api/v0/"
+ 'gw_url': "http://172.17.0.2:8080",
+ 'api_url': "http://172.17.0.2:5001/api/v0/"
 };
