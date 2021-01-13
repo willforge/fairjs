@@ -26,7 +26,11 @@ var script = document.createElement('script');
        var elems = document.getElementsByClassName('md');
        console.log(elems);
        for(var i=0; i<elems.length; i++) {
-          buf = elems[i].innerHTML;
+          if (typeof(qm) != 'undefined') {
+            buf = elems[i].innerHTML.replace(/:qm/g,qm);
+          } else {
+            buf = elems[i].innerHTML;
+          }
           console.log(buf);
           var converter = new showdown.Converter();
           elems[i].innerHTML = converter.makeHtml(buf);
