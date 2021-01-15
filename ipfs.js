@@ -223,7 +223,7 @@ async function ipfsPublish(pubpath) {
     console.debug(callee+'.sha2: ',sha2);
     console.debug(callee+'.key: ',key);
     //let record = hash+': '+parent;
-    let record = key+': /ipfs/'+whash+'/'+fname
+    let record = key+': /ipfs/'+whash+'/'+fname+"\n";
     console.debug(callee+'.record: ',record);
     let indexlogf = core.dir+'/shards/'+shard+'/'+core.index;
     let lhash = await ipfsLogAppend(indexlogf,record);
