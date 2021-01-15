@@ -313,7 +313,16 @@ function ipfsResolve(ipath) {
 }
 
 
-function ipfsGetToken(string) {
+function ipfsSetToken(string) { // pin=true
+  let [callee, caller] = functionNameJS(); // logInfo("message !")
+  console.debug(callee+'.inputs:',{string});
+  let url = api_url + 'add?file=content.dat&raw-leaves=true&hash=sha3-224&only-hash=false&cid-base=base58btc&pin=true'
+  return fetchPostText(url,string)
+  .then( resp => resp.json() )
+  .then( json => json.Hash )
+  .catch(logError)
+}
+function ipfsGetToken(string) { // only-hash
   let [callee, caller] = functionNameJS(); // logInfo("message !")
   console.debug(callee+'.inputs:',{string});
   let url = api_url + 'add?file=content.dat&raw-leaves=true&hash=sha3-224&only-hash=true&cid-base=base58btc&pin=false'
@@ -321,8 +330,8 @@ function ipfsGetToken(string) {
   .then( resp => resp.json() )
   .then( json => json.Hash )
   .catch(logError)
-
 }
+
 function ipfsFindProvs(key) {
    let [callee, caller] = functionNameJS();
    // num-providers=20&timeout=61s
