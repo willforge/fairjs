@@ -264,7 +264,7 @@ function fetchPostBinary(url, content) {
      let form = new FormData(); // need encodeURI ... ??
      form.append('file', content)
      return fetch(url, { method: "POST", mode: 'cors', body: form })
-     .then(console.log)
+     .then(_ => { console.log(callee+'._:',_); return _; })
      .catch(console.warn)
 }
 
