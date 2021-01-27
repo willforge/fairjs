@@ -105,7 +105,7 @@ function getNameByPeerkey(id) {
   return fullname
 }
 
-async function notify(ev) {
+async function biff_notify(ev) {
  let qm = await send_notification_token(envelop.to);
  return qm
 }
@@ -114,23 +114,41 @@ async function publish_root() {
   let [callee, caller] = functionNameJS();
   // assummed identity is previously set
 
-
-  /* backup previous publish */
+  /* backup previous publish
   let [prev_exists,qmprev] = await mfsExists('/.../published')
   if (prev_exists) {
-    console.info(callee+'.info: previous backup');
-    await mfsRemove('/.../published/_prev')
-    await mfsCopy(qmprev,'/.../published/_prev')
-    await mfsRemove('/.../published/_prev/_prev')
+    if (ipfsExists('/.../published',qmprev)[0]) {
+     qmprev = await ipfsRemove('/.../published',qmprev)
+    }
+    console.info(callee+'.info: previous backup:', qmprev);
+    let hash = await mfsCopy(qmprev,'/.../published/_prev')
   }
+  */
+
+
   /* create new root */
   console.info(callee+'.info: create root');
   let emptyd = await ipfsMkdir();
+  // grab existing root if exist (assumed peerid is globally avaible)
+  let root_path = await ipfsNameResolve(peerid);
+  let qmroot = root_path.replace('/ipfs/','');
+  console.info(callee+'.qmroot:',qmroot);
 
+  // remove /...
+  let qm = qmroot;
+  if (await ipfsExists('/...',qmroot)[0]) { qm = await ipfsRemove('/...',qmroot); }
+  if (await ipfsExists('/my',qm)[0]) { qm = await ipfsRemove('/my',qm); }
+  if (await ipfsExists('/public',qm)[0]) { qm = await ipfsRemove('/public',qm); }
+  if (await ipfsExists('/etc',qm)[0]) { qm = await ipfsRemove('/etc',qm); }
+  console.debug(callee+'.qm:',qm);
+  
   // add /...
-  let qm = await ipfsCopy('/...',emptyd)
+  qm = await ipfsCopy('/...',qm)
+  console.debug(callee+'.qm:',qm);
   qm = await ipfsCopy('/my',qm);
+  console.debug(callee+'.qm:',qm);
   qm = await ipfsCopy('/public',qm);
+  console.debug(callee+'.qm:',qm);
   qm = await ipfsCopy('/etc',qm);
   console.debug(callee+'.qm:',qm);
   ipfsNamePublish('self','/ipfs/'+qm);
@@ -318,4 +336,14 @@ function compare(a,b) {
     }
     return order;
  }
+
+function compare0(a,b) {
+ let order = 0;
+ if (a[0] > b[0]) {
+   order = +1;
+ } else if (a[0] < b[0]) {
+   order = -1;
+ }
+ return order;
+}
 

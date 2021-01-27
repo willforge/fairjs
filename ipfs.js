@@ -20,6 +20,7 @@ const qmNull = 'QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n';
 //const cfg_url = 'http://127.0.0.1:1124/config.json';
 //var promisedConfig = load_config(cfg_url);
 var promisedPeerId;
+var ipns_cache = {};
 
 
 var thisscript = document.currentScript;
@@ -291,10 +292,21 @@ function ipfsNameResolve(k) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.inputs:',{k});
     var url = api_url + 'name/resolve?arg='+k;
-    return fetchGetPostJson(url)
-    .then( json => { return json.Path } )
-	  .catch(console.error)
-   
+    let promise = fetchGetPostJson(url)
+    .then( json => {
+      ipns_cache[k] = json.Path;
+      console.debug(callee+`.info: UPDATE ipns_cache[${k}]:`,ipns_cache[k]);
+      return json.Path }
+    )
+    .catch(console.error);
+
+    if (typeof(ipns_cache[k]) != 'undefined') { 
+       console.debug(callee+`.info: HIT ipns_cache[${k}]:`,ipns_cache[k]);
+       return(ipns_cache[k]);
+    } else {
+      console.debug(callee+'.info: MISS promise:',promise);
+      return promise;
+    }
 }
 function ipfsResolve(ipath) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
@@ -877,6 +889,15 @@ function mfsCopy(hash,mfspath) {
 
 
 }
+function ipfsRemove(name,hash) {
+   let [callee, caller] = functionNameJS(); // logInfo("message !")
+   var url = api_url + 'object/patch/rm-link?arg='+hash+'&arg='+name
+     return fetch(url,{method:'POST'})
+     .then( resp => resp.json() )
+     .then( json => { return json.Hash; })
+   .catch(logError)
+   
+}
 async function ipfsCopy(mfspath,hash) {
    let [callee, caller] = functionNameJS(); // logInfo("message !")
    let link = await getMFSFileHash(mfspath);
@@ -891,6 +912,22 @@ async function ipfsCopy(mfspath,hash) {
      .then( json => { return json.Hash; })
    .catch(logError)
    }
+}
+
+function ipfsExists(path,qm) {
+   let [callee, caller] = functionNameJS(); // logInfo("message !")
+   var url = api_url + 'files/stat?arg=/ipfs/'+qm+path+'&hash=true';
+   return fetch(url,{method:'POST'})
+      .then( resp => { console.log(callee+'.resp:'); return resp; } )
+      .then( resp => resp.json() )
+      .then( json => {
+            if (typeof json.Hash == 'undefined') {
+              return [false,null]
+            } else {
+              return [true,json.Hash]
+            }
+        })
+   .catch(console.error)
 }
 
 function mfsExists(mfspath) {
