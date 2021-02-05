@@ -180,7 +180,11 @@ function hashkey(s) {
 }
 
 function shortqm(qm) {
-   return qm.substr(0,6)+'...'+qm.substr(-3)
+   if (typeof(qm) != 'undefined') {
+      return qm.substr(0,6)+'...'+qm.substr(-3)
+   } else {
+      return 'undefined';
+   }
 }
 
 function indexlogfilename(mutable) {
@@ -304,7 +308,7 @@ function ipfsNameResolve(k) {
        console.debug(callee+`.info: HIT ipns_cache[${k}]:`,ipns_cache[k]);
        return(ipns_cache[k]);
     } else {
-      console.debug(callee+'.info: MISS promise:',promise);
+      console.debug(callee+'.info: MISS promised:',promise);
       return promise;
     }
 }
@@ -817,7 +821,6 @@ function createParent(path) {
     console.debug(callee+'.inputs:',{path});
 
     let dir = path.replace(new RegExp('/[^/]*$'),'');
-    console.debug(callee+'.dir:',dir);
     var url = api_url + 'files/stat?arg=' + dir + '&size=true'
     return fetch(url, {method:'POST'})
 	.then( resp => resp.json() )
@@ -945,8 +948,18 @@ function mfsExists(mfspath) {
         })
    .catch(console.error)
 }
+function mfsLs(mfspath) {
+   let [callee, caller] = functionNameJS(); // logInfo("message !")
+   var url = api_url + 'files/ls?arg='+mfspath+'&long=true&U=true';
+   return fetch(url,{method:'POST'})
+      .then( resp => resp.json() )
+      .then( json => {
+            return json
+            })
+   .catch(console.error)
+}
 
-function getMFSFileHash(mfspath) {
+function getMFSFileHash(mfspath) { // alias mfsGetHashByPath
    let [callee, caller] = functionNameJS(); // logInfo("message !")
    console.debug(callee+'.inputs:',{mfspath});
 

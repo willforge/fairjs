@@ -113,18 +113,7 @@ async function biff_notify(ev) {
 async function publish_root() {
   let [callee, caller] = functionNameJS();
   // assummed identity is previously set
-
-  /* backup previous publish
-  let [prev_exists,qmprev] = await mfsExists('/.../published')
-  if (prev_exists) {
-    if (ipfsExists('/.../published',qmprev)[0]) {
-     qmprev = await ipfsRemove('/.../published',qmprev)
-    }
-    console.info(callee+'.info: previous backup:', qmprev);
-    let hash = await mfsCopy(qmprev,'/.../published/_prev')
-  }
-  */
-
+  let ts = Date.now();
 
   /* create new root */
   console.info(callee+'.info: create root');
@@ -132,7 +121,18 @@ async function publish_root() {
   // grab existing root if exist (assumed peerid is globally avaible)
   let root_path = await ipfsNameResolve(peerid);
   let qmroot = root_path.replace('/ipfs/','');
-  console.info(callee+'.qmroot:',qmroot);
+  console.info(callee+'.qmroot:', qmroot);
+
+  // backup previous publish
+  let [prev_exists,qmprev] = await mfsExists('/.../published');
+  if (prev_exists) {
+    console.info(callee+'.qmprev:', qmprev);
+    let qmlog = await ipfsLogAppend('/.../previous-publish.log',`${ts}: ${qmprev}\n`);
+    console.info(callee+'.info: qmlog:', qmlog);
+    console.log(callee+'.out:before',await mfsLs('/.../published'));
+    await mfsRemove('/.../published');
+    
+  }
 
   // remove /...
   let qm = qmroot;
@@ -153,12 +153,9 @@ async function publish_root() {
   console.debug(callee+'.qm:',qm);
   ipfsNamePublish('self','/ipfs/'+qm);
 
-  await mfsRemove('/.../published')
   await mfsCopy(qm,'/.../published')
-
- //qm = await getMFSFileHash('/')
- console.debug(callee+'.qm:',qm);
- return qm;
+  console.debug(callee+'.qm:',qm);
+  return qm;
 }
 
 async function get_mbox() {
