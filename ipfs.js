@@ -578,10 +578,10 @@ function ipnsGetContentByKey(key) {
 
 }
 
-function ipfsLsofPath(path) {
+function ipfsLsofPath(ipfspath) {
     let [callee, caller] = functionNameJS();
-    console.debug(callee+'.inputs:',{path});
-    url = api_url + 'ls?arg='+path
+    console.debug(callee+'.inputs:',{ipfspath});
+    url = api_url + 'ls?arg='+ipfspath
     console.debug(callee+'.url: '+url);
     return fetchGetPostJson(url)
 	.then( json => { console.log(callee+'.json:',json); return json.Objects[0]; })
@@ -937,7 +937,7 @@ function mfsExists(mfspath) {
    let [callee, caller] = functionNameJS(); // logInfo("message !")
    var url = api_url + 'files/stat?arg='+mfspath+'&hash=true'
    return fetch(url,{method:'POST'})
-      .then( resp => { console.log(callee+'.resp:'); return resp; } )
+      .then( resp => { console.log(callee+'.resp:',resp); return resp; } )
       .then( resp => resp.json() )
       .then( json => {
             if (typeof json.Hash == 'undefined') {
