@@ -30,6 +30,6 @@ window.config = {
  'lgw_url': "http://127.0.0.1:",
  'lapi_url': "http://127.0.0.1:5001/api/v0/",
 
- 'gw_url': "http://172.17.0.2:8396",
+ 'gw_url': "http://172.17.0.2:8080",
  'api_url': "http://172.17.0.2:5001/api/v0/"
 };
