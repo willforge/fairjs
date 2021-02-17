@@ -29,9 +29,9 @@ function basename(f) {
   let s = '/';
   let p = f.lastIndexOf(s,f.length-2);
   let b = f.substr(p+1);
-  console.debug('basename.f:',f)
-  console.debug('basename.p:',p)
-  console.debug('basename.b:',b)
+  //console.debug('basename.f:',f)
+  //console.debug('basename.p:',p)
+  //console.debug('basename.b:',b)
   return b;
 }
 
@@ -341,7 +341,7 @@ function fetchGetPostJson(url) {
       .then(validateStatus)
       .then( resp => resp.json() )
       .then( json => { console.debug(caller+'.'+callee+'.json:',json); return json } )
-      .catch(console.error)
+      .catch(console.warn)
 }
 function fetchGetJson(url) {
    let [callee, caller] = functionNameJS();

@@ -13,6 +13,12 @@
 // Log:
 //  console.log => console.debug by Emile Achadde 27 août 2020 at 16:15:22+02:00
 // ---
+if (typeof(ipns_cache) == 'undefined') {
+ var ipns_cache = {
+  'QmezgbyqFCEybpSxCtGNxfRD9uDxC53aNv5PfhB3fGUhJZ':'/ipfs/bafyaabakaieac'
+ };
+}
+
 configure(config);
 
 const qmNull = 'QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n';
@@ -20,12 +26,6 @@ const qmNull = 'QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n';
 //const cfg_url = 'http://127.0.0.1:1124/config.json';
 //var promisedConfig = load_config(cfg_url);
 var promisedPeerId;
-var ipns_cache = {
-  '12D3KooWHpj1ercuLscv78Ezz4TADdwSgNkmNmd4qH8dfCCcwZHX':'/ipfs/QmU2vXnWUHmyDygqjsEJDxm7NkCE943CTqZSTq4wrE111M',
-  'QmTeqJutKAtVyX39qvhAGfjQFesbubamN8dvVPMg5jYRwS':'/ipfs/QmeihygynRMSLKZNEhQ2zavyRGKXjH2YGhyERokE3Lf6u1',
-  '12D3KooWJDBrt6re8zveUPZKwC3QPBid4iCguyMVuWbKMXb5HeTa':'/ipfs/bafyaabakaieac'
-  };
-
 
 var thisscript = document.currentScript;
 thisscript.version = '1.1';
@@ -339,7 +339,7 @@ function ipfsSetToken(string) { // pin=true
   let url = api_url + 'add?file=content.dat&raw-leaves=true&hash=sha3-224&only-hash=false&cid-base=base58btc&pin=true'
   return fetchPostText(url,string)
   .then( resp => resp.json() )
-  .then( json => json.Hash )
+  .then( json => { console.log(callee+'.json:',json); return json.Hash })
   .catch(logError)
 }
 function ipfsGetToken(string) { // only-hash
@@ -510,6 +510,12 @@ function ipfsGetContentByPath(path) { // no timeout
     return fetchRespCatch(url)
 	.catch(console.error)
 }
+function ipfsGetJsonByPath(path) { // no timeout
+    url = api_url + 'cat?arg='+path;
+    return fetchGetPostJson(url)
+	.catch(console.error)
+}
+
 
 function ipfsGetHashByContent(buf) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
@@ -822,7 +828,7 @@ function ipfsLogAppend(mfspath,record) {
 
 function createParent(path) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
-    console.debug(callee+'.inputs:',{path});
+    //console.debug(callee+'.inputs:',{path});
 
     let dir = path.replace(new RegExp('/[^/]*$'),'');
     var url = api_url + 'files/stat?arg=' + dir + '&size=true'
@@ -831,7 +837,7 @@ function createParent(path) {
 	.then( json => {
         if (typeof(json.Code) == 'undefined') {
         console.debug(callee+'.dir:',dir);
-        console.debug(callee+'.json:',json);
+        //console.debug(callee+'.json:',json);
         return json;
         } else {
         // {"Message":"file does not exist","Code":0,"Type":"error"}
@@ -885,12 +891,12 @@ function mfsRemove(mfspath) {
 }
 function mfsCopy(hash,mfspath) {
    let [callee, caller] = functionNameJS(); // logInfo("message !")
-   console.log(callee+'.inputs:',{hash});
+   //console.log(callee+'.inputs:',{hash});
    var url = api_url + 'files/cp?arg=/ipfs/'+hash+'&arg='+mfspath;
    console.log(callee+'.url:',url);
    return fetch(url,{method:'POST'})
    .then( resp => resp.text() )
-   .then( text => { console.log(callee+'.text:',text); })
+   .then( text => { if (text != '') { console.log(callee+'.text:',text); } return text; })
    .then( _ => { return getMFSFileHash(mfspath); })
    .catch(console.error)
 
@@ -908,9 +914,9 @@ function ipfsRemove(name,hash) {
 async function ipfsCopy(mfspath,hash) {
    let [callee, caller] = functionNameJS(); // logInfo("message !")
    let link = await getMFSFileHash(mfspath);
-   console.log(callee+'.link:',link);
+   //console.log(callee+'.link:',link);
    let name = basename(mfspath);
-   console.log(callee+'.name:',name);
+   //console.log(callee+'.name:',name);
    if (link != qmNull) {
      var url = api_url + 'object/patch/add-link?arg='+hash+'&arg='+name+'&arg='+link;
      console.log(callee+'.url:',url);
@@ -925,9 +931,9 @@ function ipfsExists(path,qm) {
    let [callee, caller] = functionNameJS(); // logInfo("message !")
    var url = api_url + 'files/stat?arg=/ipfs/'+qm+path+'&hash=true';
    return fetch(url,{method:'POST'})
-      .then( resp => { console.log(callee+'.resp:'); return resp; } )
       .then( resp => resp.json() )
       .then( json => {
+            // console.log(callee+'.json:',json)
             if (typeof json.Hash == 'undefined') {
               return [false,null]
             } else {
@@ -971,7 +977,7 @@ function getMFSFileHash(mfspath) { // alias mfsGetHashByPath
       return fetch(url,{method:'POST'})
       .then( resp => resp.json() )
       .then( json => {
-            if (typeof json.Hash == 'undefined') {
+            if (typeof(json.Hash) == 'undefined') {
             if (typeof(qmEmpty) != 'undefined') { return qmEmpty }
             else { console.debug(callee+'.json.Hash: undefined'); return qmNull }
             } else {

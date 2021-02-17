@@ -126,10 +126,10 @@ async function publish_root() {
   // backup previous publish
   let [prev_exists,qmprev] = await mfsExists('/.../published');
   if (prev_exists) {
-    console.info(callee+'.qmprev:', qmprev);
+    //console.info(callee+'.qmprev:', qmprev);
     let qmlog = await ipfsLogAppend('/.../previous-publish.log',`${ts}: ${qmprev}\n`);
-    console.info(callee+'.info: qmlog:', qmlog);
-    console.log(callee+'.out:before',await mfsLs('/.../published'));
+    //console.info(callee+'.info: qmlog:', qmlog);
+    //console.log(callee+'.out:before',await mfsLs('/.../published'));
     await mfsRemove('/.../published');
     
   }
@@ -140,21 +140,21 @@ async function publish_root() {
   if (await ipfsExists('/my',qm)[0]) { qm = await ipfsRemove('/my',qm); }
   if (await ipfsExists('/public',qm)[0]) { qm = await ipfsRemove('/public',qm); }
   if (await ipfsExists('/etc',qm)[0]) { qm = await ipfsRemove('/etc',qm); }
-  console.debug(callee+'.qm:',qm);
+  //console.debug(callee+'.qm:',qm);
   
   // add /...
   qm = await ipfsCopy('/...',qm)
-  console.debug(callee+'.qm:',qm);
+  //console.debug(callee+'.qm:',qm);
   qm = await ipfsCopy('/my',qm);
-  console.debug(callee+'.qm:',qm);
+  //console.debug(callee+'.qm:',qm);
   qm = await ipfsCopy('/public',qm);
-  console.debug(callee+'.qm:',qm);
+  //console.debug(callee+'.qm:',qm);
   qm = await ipfsCopy('/etc',qm);
-  console.debug(callee+'.qm:',qm);
+  //console.debug(callee+'.qm:',qm);
   ipfsNamePublish('self','/ipfs/'+qm);
 
   await mfsCopy(qm,'/.../published')
-  console.debug(callee+'.qm:',qm);
+  //console.debug(callee+'.qm:',qm);
   return qm;
 }
 
