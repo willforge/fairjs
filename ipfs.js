@@ -505,9 +505,9 @@ function ipfsGetHashContent(hash,timeout) {
 	.catch(console.error)
 }
 
-function ipfsGetContentByPath(path) { // no timeout
+function ipfsGetContentByPath(path) { // no timeout, no error
     url = api_url + 'cat?arg='+path;
-    return fetchRespCatch(url)
+    return fetchRespNoCatch(url)
 	.catch(console.error)
 }
 function ipfsGetJsonByPath(path) { // no timeout
