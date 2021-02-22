@@ -110,18 +110,9 @@ async function biff_notify(ev) {
  return qm
 }
 
-async function publish_root() {
+async function create_root_w_log() {
   let [callee, caller] = functionNameJS();
-  // assummed identity is previously set
   let ts = Date.now();
-
-  /* create new root */
-  console.info(callee+'.info: create root');
-  let emptyd = await ipfsMkdir();
-  // grab existing root if exist (assumed peerid is globally avaible)
-  let root_path = await ipfsNameResolve(peerid);
-  let qmroot = root_path.replace('/ipfs/','');
-  console.info(callee+'.qmroot:', qmroot);
 
   // backup previous publish
   let [prev_exists,qmprev] = await mfsExists('/.../published');
@@ -130,9 +121,21 @@ async function publish_root() {
     let qmlog = await ipfsLogAppend('/.../previous-publish.log',`${ts}: ${qmprev}\n`);
     //console.info(callee+'.info: qmlog:', qmlog);
     //console.log(callee+'.out:before',await mfsLs('/.../published'));
-    await mfsRemove('/.../published');
-    
   }
+  return create_root_nolog();
+
+}
+async function create_root_nolog() {
+  let [callee, caller] = functionNameJS();
+  // assummed identity is previously set
+
+  /* create new root */
+  console.info(callee+'.info: create root');
+  let emptyd = await ipfsMkdir();
+  // grab existing root if exist (assumed peerid is globally avaible)
+  let root_path = await ipfsNameResolve(peerid);
+  let qmroot = root_path.replace('/ipfs/','');
+  console.info(callee+'.qmroot:', qmroot);
 
   // remove /...
   let qm = qmroot;
@@ -143,15 +146,14 @@ async function publish_root() {
   //console.debug(callee+'.qm:',qm);
   
   // add /...
-  qm = await ipfsCopy('/...',qm)
+  qm = await ipfsCopy('/.../published/...',qm);
+       await ipfsRemove('published',qm+'/...');
   //console.debug(callee+'.qm:',qm);
   qm = await ipfsCopy('/my',qm);
   //console.debug(callee+'.qm:',qm);
   qm = await ipfsCopy('/public',qm);
   //console.debug(callee+'.qm:',qm);
   qm = await ipfsCopy('/etc',qm);
-  //console.debug(callee+'.qm:',qm);
-  ipfsNamePublish('self','/ipfs/'+qm);
 
   await mfsCopy(qm,'/.../published')
   //console.debug(callee+'.qm:',qm);
