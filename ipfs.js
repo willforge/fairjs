@@ -691,7 +691,7 @@ function ipfsWriteContent(mfspath,buf) {
     console.debug(callee+'.inputs:',[{mfspath,buf}]);
     
     // truncate doesn't work for version <= 0.4 !
-    // so it does a rm before
+    // so let's do a rm before
     return createParent(mfspath)
 	.then(ipfsRmMFSFileUnless06(mfspath))
 	.then( _ => {

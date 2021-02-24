@@ -199,10 +199,10 @@ function validateRespNoCatch(resp) { // validate: OK ? text : json
         .then( text => { // ! can be text of json 
            if (text.match(/^{/)) { // test if it is in fact a json}
              let json = JSON.parse(text);
-			console.debug(callee+'.ok.json: %o',[{json}]);
+		         // console.debug(callee+'.ok.json: %o',[{json}]);
              return json;
            } else {
-			console.debug(callee+'.ok.text: %o',[{text}]);
+             // console.debug(callee+'.ok.text: %o',[{text}]);
              return text;
            }
         }));

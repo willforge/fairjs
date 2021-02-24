@@ -146,8 +146,11 @@ async function create_root_nolog() {
   //console.debug(callee+'.qm:',qm);
   
   // add /...
-  qm = await ipfsCopy('/.../published/...',qm);
-       await ipfsRemove('published',qm+'/...');
+  qm = await ipfsCopy('/.../published/...',qm); // recover last published "/..." from mfs
+  console.info(callee+'.qm:(w previous ...):', qm);
+       await ipfsRemove('published',qm+'/...'); // remove previously published if one existed
+  console.info(callee+'.qm:(w/o published):', qm);
+
   //console.debug(callee+'.qm:',qm);
   qm = await ipfsCopy('/my',qm);
   //console.debug(callee+'.qm:',qm);
@@ -155,6 +158,8 @@ async function create_root_nolog() {
   //console.debug(callee+'.qm:',qm);
   qm = await ipfsCopy('/etc',qm);
 
+  // update mfs published
+  await mfsRemove('/.../published');
   await mfsCopy(qm,'/.../published')
   //console.debug(callee+'.qm:',qm);
   return qm;
