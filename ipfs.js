@@ -210,6 +210,16 @@ function indexlogfilename(mutable) {
     return indexlogf
 }
 
+function ipfsPing(peer) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    var url = api_url + 'ping?arg='+peer+'&count=2';
+    return fetchGetPostText(url)
+    .then( obj => {
+       console.debug(callee+'.obj:',obj);
+    })
+    .catch(console.error);
+}
+
 async function ipfsPublish(pubpath) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.inputs:',{pubpath});
