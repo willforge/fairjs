@@ -25,6 +25,7 @@ const qmNull = 'QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n';
 //var config;
 //const cfg_url = 'http://127.0.0.1:1124/config.json';
 //var promisedConfig = load_config(cfg_url);
+var promisedGW;
 var promisedPeerId;
 
 var thisscript = document.currentScript;
@@ -66,23 +67,35 @@ promisedConfig.then( cfg => {
 */
 
 function configure(cfg) {
-
-   if (typeof(api_url) == 'undefined') {
+   api_url = localStorage.getItem('api_url');
+   if (typeof(api_url) == 'undefined' || api_url == null || api_url == '') {
       if (typeof(cfg) != 'undefined') {
          api_url = cfg.api_url;
       } else {
          api_url = 'http://127.0.0.1:5001/api/v0/';
       }
       console.info('api_url: ',api_url)
+   } else {
+      let el = document.getElementsByName('api_url')[0];
+      if (typeof(el) != 'undefined') { el.value = api_url }
+      console.info('localStorage.api_url: ',api_url)
+      
    }
-   if (typeof(gw_url) == 'undefined') {
-      if (typeof(cfg) != 'undefined') {
-         gw_url = cfg.gw_url;
-      } else {
-         gw_url = 'http://127.0.0.1:8080';
-      }
-      console.info('gw_url: ',gw_url)
-   }
+   promisedGW = update_gw_url(api_url) // from api_config.js
+   .then ( url => {
+     gw_url = url;
+     if (typeof(gw_url) == 'undefined' || gw_url == null || gw_url == '') {
+        if (typeof(cfg) != 'undefined') {
+           gw_url = cfg.gw_url;
+        } else {
+           gw_url = 'http://127.0.0.1:8080';
+        }
+     }
+     console.info('config.gw_url: ',gw_url)
+     return gw_url;
+   })
+   .catch(console.error);
+   console.log('configure.promisedGW: ',promisedGW)
 
    //var container = document.getElementsByClassName('container');
    if (typeof(ipfsversion) == 'undefined') {
@@ -340,16 +353,17 @@ function ipfsSetToken(string) { // pin=true
   return fetchPostText(url,string)
   .then( resp => resp.json() )
   .then( json => { console.log(callee+'.json:',json); return json.Hash })
-  .catch(logError)
+  .catch(console.error)
 }
 function ipfsGetToken(string) { // only-hash
   let [callee, caller] = functionNameJS(); // logInfo("message !")
   console.debug(callee+'.inputs:',{string});
   let url = api_url + 'add?file=content.dat&raw-leaves=true&hash=sha3-224&only-hash=true&cid-base=base58btc&pin=false'
+  console.debug(callee+'.url:',url);
   return fetchPostText(url,string)
   .then( resp => resp.json() )
   .then( json => json.Hash )
-  .catch(logError)
+  .catch(console.error)
 }
 
 function ipfsFindProvs(key) {

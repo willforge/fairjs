@@ -10,6 +10,7 @@ function update_api_url(ev) {
    let url = ev.target.value;
    window.config.api_url = url;
    api_url = url;
+   localStorage.setItem('api_url',api_url);
 
    promisedGW = update_gw_url(api_url).then ( gw_url => {
      let webui_url = `${gw_url}/ipfs/${qmwebui}`;
@@ -42,7 +43,8 @@ function update_gw_url(api_url) {
      let gw = json.Value;
      let [_,type,host,proto,port] = gw.split('/');
      let h = port % 251; // host : gw_port modulo 251
-     if (host == '0.0.0.0') { host = '127.0.0.1'; }
+     /* assumed api_host and gw_host have the same IP (when host is equal to 0.0.0.0) */
+     if (host == '0.0.0.0') { host = api_url.match(new RegExp('https?://([^/:]+)'))[1]; }
      console.log('update_gw_url.host:',host);
      gw_url = `http://${host}:${port}`;
      console.log('update_gw_url.gw_url:',gw_url);
