@@ -8,6 +8,7 @@ if (el) {
 
 function update_api_url(ev) {
    let url = ev.target.value;
+   if (url == '') { return false; }
    window.config.api_url = url;
    api_url = url;
    localStorage.setItem('api_url',api_url);
