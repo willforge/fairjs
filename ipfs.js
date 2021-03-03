@@ -319,7 +319,7 @@ function ipfsNamePublish(k,v) {
 	.then( json => { return json.Value })
 	.catch(console.error)
 }
-function ipfsNameResolve(k) {
+function ipfsNameResolve(k,cb) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.inputs:',{k});
     var url = api_url + 'name/resolve?arg='+k;
@@ -327,8 +327,9 @@ function ipfsNameResolve(k) {
     .then( json => {
       ipns_cache[k] = json.Path;
       console.debug(callee+`.info: UPDATE ipns_cache[${k}]:`,ipns_cache[k]);
-      return json.Path }
-    )
+      if (typeof(cb) != 'undefined') { return cb(json.Path); }
+      return json.Path
+    })
     .catch(console.error);
 
     if (typeof(ipns_cache[k]) != 'undefined') { 
@@ -739,7 +740,7 @@ function ipfsWriteText(mfspath,buf) { // truncate doesn't work for version < 0.5
 		.then( _ => getMFSFileHash(mfspath)) 
 		.catch(logError)
 	})
-	.catch(consol.warn)
+	.catch(console.warn)
 }
 
 async function ipfsFileAppend(data,file) { // easy way: read + create !
