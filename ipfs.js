@@ -819,13 +819,16 @@ function ipfsWriteJson(mfspath,obj) {
 async function makeItRaw(mfspath) {
   let [callee, caller] = functionNameJS(); // logInfo("message !")
   let hash = await getMFSFileHash(mfspath); 
+  if (hash == null) {
+    return hash;
+  }
   console.debug(callee+'.hash:',hash);
   console.debug(callee+'.hash16:',hash.toString(16));
   if (! hash.toString(16).match(/^0155/)) {
-   let  url = api_url + 'files/read?arg='+path
+   let  url = api_url + 'files/read?arg='+mfspath
    let buf = await fetchRespCatch(url)
    console.debug(callee+'.buf:',buf);
-
+   // remove ?
    url = api_url + 'files/write?arg=' + mfspath + '&raw-leaves=true&trickle=true&cid-base=base58btc&create=true&truncate=true';
    return fetchPostBinary(url, buf)
    .then( _ => getMFSFileHash(mfspath)) 
@@ -841,15 +844,52 @@ function ipfsLogAppend(mfspath,record) {
 
    // note is file doesn't exist then 
    return createParent(mfspath)
-      .then( _ => getMFSFileSize(mfspath))
+      .then( _ => getMFSFileHash(mfspath)) 
+      .then( hash => { return isRawLeaf(hash); } )
+      .then( isRaw => {
+         if (!isRaw) {
+           console.info(callee+'.mfspath.isNotRaw:',mfspath);
+           return makeItRaw(mfspath);
+         } else {
+           console.info(callee+'.mfspath.isRaw:',mfspath);
+           return true;
+         }
+      })
+      .then( _ => getMFSFileSize(mfspath) )
       .then( offset => {
             console.debug(mfspath,': offset=',offset);
             let url = api_url + 'files/write?arg=' + mfspath + '&raw-leaves=true&cid-base=base58btc&create=true&truncate=false&offset='+offset;
             return fetchPostText(url, record) // /!\ no "\n" is inserted by default, please add your own if necessary !
             .then( _ => getMFSFileHash(mfspath)) 
             })
-   .catch(logError)
+   .catch(console.error)
 }
+
+async function isRawLeaf(qm) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+   let url = api_url + 'dag/get?arg='+qm+'&data-encoding=base64';
+   let dag = await fetchGetPostJson(url);
+   console.debug(callee+'.dag: %..."}',JSON.stringify(dag).substr(0,36));
+   if (typeof(dag.data) == 'undefined') {
+      console.debug(callee+'.dag.data (raw-leaf): undefined');
+      return true; // is Raw
+   } else {
+      if (dag.links.length == 0) {
+         console.debug(callee+'.dag.links.length (protobuf):',0);
+         return false; // no links == 1 protobuf chunk !
+      }
+      for (let link of dag.links) {
+         console.debug(callee+'.link:',link);
+         let hash = link.Cid['/']
+         console.debug(callee+'.hash:',hash);
+         if (! hash.match(/^baf/)) {
+           return false;
+         }
+      }
+      return true;
+   }
+}
+
 
 function createParent(path) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
