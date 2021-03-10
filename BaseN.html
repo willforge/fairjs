@@ -1,0 +1,87 @@
+<!DOCTYPE html><meta charset="utf8"><!-- code by Dr I·T -->
+<style>
+input { width: 43em; }
+</style>
+<script src="BaseN.js" title="Inspired by [45678](https://github.com/45678/Base58)" ></script>
+<p><input name=mhash value=Qm1234 onchange="convert(event);">
+<p><span id=array><span></p>
+<p><span id=hex><span></p>
+
+<div>
+<input name=base16 disabled>
+<br><input name=RFC4648 disabled>
+<!-- 
+<br><input name=radix32 disabled>
+<br><input name=base36 disabled>
+<br><input name=base39 disabled>
+<br><input name=base58 disabled>
+<br><input name=base64m disabled>
+<br><br><input name=baseZ disabled>
+-->
+</div>
+
+
+
+<script>
+function convert(ev) {
+ let mhash = ev.target.value;
+ console.log('mhash:',mhash)
+
+ let arr;
+ let code = mhash.slice(0,1); // equivalent to mhash.substr(0,1);
+ console.log('code:',code);
+ switch(true) {
+   case (code == 'Q'):
+     arr = BaseN.decode(mhash,58);
+    break;
+   case (code == 'z'):
+     arr = BaseN.decode(mhash.slice(1),58);
+     console.log('arr:',arr);
+    break;
+   case (code == 'f'):
+     arr = BaseN.decode(mhash.slice(1),'base16');
+    break
+   case (code == 'b'):
+     arr = BaseN.decode(mhash.slice(1),'RFC4648');
+    break
+   case (code == 'k'):
+    arr = BaseN.decode(mhash.slice(1),36);
+    break
+   default:
+    arr = BaseN.decode(mhash.slice(1),BaseN.maxN);
+  }
+  document.getElementById('array').innerText = '['+arr.join(',')+']';
+  console.log('arr.toHex:',toHex(arr));
+  document.getElementById('hex').innerText = toHex(arr);
+
+  let p = document.getElementsByName('base16')[0].parentNode;
+  let outputs = p.getElementsByTagName('input');
+  console.log('outputs:',outputs);
+  for (let o of outputs) {
+     let m;
+     if (typeof(BaseN.BASES[o.name]) != 'undefined') {
+        console.log('o.name:',o.name);
+        e = BaseN.encode(arr,o.name)
+           o.value = o.name+":"+e;
+     } else if ( m = o.name.match(/^base(\d+)/) ) {
+        b = parseInt(m[1])
+           e = BaseN.encode(arr,b)
+           o.value = b+"'"+e;
+     } else {
+        b =  BaseN.maxN;
+        e = BaseN.encode(arr,b)
+           o.value = b+"'"+e;
+     }
+  }
+ console.log(arr.toString());
+}
+
+function toHex(buf) { /* Uint8Array to Hex */
+ /* see also : [1](https://blog.xaymar.com/2020/12/08/fastest-uint8array-to-hex-string-conversion-in-javascript/) */
+  return Array.prototype.map.call(buf, x => ('0' + x.toString(16)).slice(-2)).join('');
+}
+/* w/ pading ...
+function toHex(buffer) {
+  return Array.prototype.map.call(buffer, x => x.toString(16).padStart(2, '0')).join('');
+} */
+</script>
