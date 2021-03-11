@@ -84,40 +84,36 @@
  }
 
   BaseN.encode = function(buffer,base) {
+    let v = 0;
     var carry, digits, j;
     if (buffer.length === 0) {
       return "";
     }
     var alphab = alphabet(base)
-    console.log('encode.alphab:',alphabet(base));
+    console.log('encode.alphab[%s]: %s (#%s)',base,alphabet(base),alphabet(base).length);
     var N = alphab.length;
-    i = void 0;
-    j = void 0;
     digits = [0];
-    i = 0;
-    while (i < buffer.length) {
-      j = 0;
-      while (j < digits.length) {
-        digits[j] <<= 8;
-        j++;
+    for (i = 0; i < buffer.length ; i++) {
+      for(j = 0; j < digits.length ; j++) {
+        digits[j] <<= 8; // * 256
       }
+      if (v) { console.log('* 256;  digits: [%s]',digits.join(',')) }
       digits[0] += buffer[i];
+      if (v) { console.log('+ %s;  digits: [%s]',buffer[i],digits.join(',')) }
       carry = 0;
-      j = 0;
-      while (j < digits.length) {
+      for (j = 0; j < digits.length; j++) {
         digits[j] += carry;
-        carry = (digits[j] / N) | 0;
+        carry = (digits[j] / N) | 0; // bitwise or : make sure it is an integer
         digits[j] %= N;
-        ++j;
       }
+      if (v) { console.log('carry = x%s (%s)',carry.toString(16),carry) }
       while (carry) {
         digits.push(carry % N);
         carry = (carry / N) | 0;
       }
-      i++;
     }
     i = 0;
-    /* wrong ... */
+    /* wrong ? ... */
     while (buffer[i] === 0 && i < buffer.length - 1) {
       digits.push(0);
       i++;
@@ -127,61 +123,79 @@
     }).join("");
   };
 
+function a2s(buf,s) { /* Uint8Array to Hex */
+  return Array.prototype.map.call(buf, x => 'x' + x.toString(16)).reverse().join(s);
+}
+
   BaseN.decode = function(string, base) {
+    let v = 1;
     var bytes, c, carry, j;
     if (string.length === 0) {
       return new (typeof Uint8Array !== "undefined" && Uint8Array !== null ? Uint8Array : Buffer)(0);
     }
-    console.log('decode.base:',base);
-    console.log('decode.alphab:',alphabet(base));
-    var zero = alphabet(base)[0]; // TODO : optimized alphabet+alphamap
+    console.log('decode.alphab[%s]: %s (#%s)',base,alphabet(base),alphabet(base).length);
+    var ab = alphabet(base);
+    var zero = ab[0]; // TODO : optimized alphabet+alphamap
+    var one = ab.slice(-1);
+    console.log('zero: %s, one: %s',zero,one);
     var map = alphamap(base);
     console.log('decode.map:',map);
     var N = Object.keys(map).length;
     console.log('N:',N)
-    i = void 0;
-    j = void 0;
     bytes = [0];
-    i = 0;
-    while (i < string.length) {
-      c = string[i];
-      if (!(c in map)) {
-        throw "BaseN.decode received unacceptable input. Character '" + c + "' is not in the BaseN alphabet :"+ alphabet(base);
-      }
-      console.log('i:%s; bytes: [%s] c=%s',i,bytes.join(','),c)
-      j = 0;
-      while (j < bytes.length) {
-        bytes[j] *= N;
-        j++;
-      }
-      console.log('* N;  bytes: [%s]',bytes.join(','))
-      bytes[0] += map[c];
-      console.log('+ c;  bytes: [%s] c=%s',bytes.map( _ => 'x'+_.toString(16)).join(','),c)
+    weights = [0];
+    for (i = 0;i < string.length; i++) {
+       c = string[i];
+       if (!(c in map)) {
+          throw "BaseN.decode received unacceptable input. Character '" + c + "' is not in the BaseN alphabet :"+ alphabet(base);
+       }
 
-      carry = 0;
-      j = 0;
-      while (j < bytes.length) {
-        bytes[j] += carry;
-        carry = bytes[j] >> 8;
-        bytes[j] &= 0xff;
-        ++j;
-      }
-      console.log('carry = %s',carry)
-      while (carry) {
-        bytes.push(carry & 0xff);
-        carry >>= 8;
-        console.log('  ;  bytes: [%s]',bytes.join(','))
-        console.log('  ;  carry: 0x%s',carry.toString(16))
-      }
-      i++;
+       // shift left bytes
+       if (v) { console.log("i:%s; bytes: [%s] c:%s m[%s]=d'%s=x%s",i,a2s(bytes,','),c,c,map[c],map[c].toString(16)) }
+       for (j = 0; j < bytes.length; j++) {
+          bytes[j] *= N;
+          weights[j] *= N;
+       }
+       if (v) { console.log('* N=%s;  bytes: [%s]',N,a2s(bytes,',')) }
+       bytes[0] += map[c]; // add current chars' value
+       if (v) { console.log('+ map[c];  bytes: [%s] c:%s map[%s]=x%s',a2s(bytes,','),c,c,map[c].toString(16)) }
+
+       weights[0] += N-1;
+       let pos = 0; // compute weight ...
+       carry = 0; // compute carry ...
+       for (j = 0; j < bytes.length; j++) {
+          weights[j] += pos;
+          pos = weights[j] >> 8;
+          weights[j] &= 0xff;
+
+          bytes[j] += carry;
+          carry = bytes[j] >> 8;
+          bytes[j] &= 0xff;
+       }
+       if (v) { console.log('        ;  weights: [%s]',a2s(weights,',')) }
+       if (v) { console.log('carry = 0x%s (%s)',carry.toString(16),carry) }
+       while (pos) { // propagate carry
+          if (carry) {
+             bytes.push(carry & 0xff);
+             carry >>= 8;
+             if (v) { console.log(' reminder: carry: 0x%s',carry.toString(16)) }
+          } else {
+            bytes.push(0);
+          }
+          weights.push(pos & 0xff);
+          pos >>= 8;
+          if (v) { console.log(' push: bytes: [%s]',a2s(bytes,',')) }
+          if (v) { console.log('     weights: [%s]',a2s(weights,'.')) }
+       }
+
     }
-    i = 0;
-    /* MGC fix !  */
-    while (string[i] === zero && string[i+1] === zero && i < string.length - 1) {
-      console.log('adding some zeros ... string[%s]=%s',i,string[i])
-      bytes.push(0);
-      i += 2;
-    }
+    console.log('bytes: [%s]',a2s(bytes,','));
+    /*
+          for(i = 0; string[i] === zero && i < string.length - 1; i++) {
+          console.log('adding some zeros ... string[%s]=%s',i,string[i])
+          bytes.push(0);
+          }
+        */
     return new (typeof Uint8Array !== "undefined" && Uint8Array !== null ? Uint8Array : Buffer)(bytes.reverse());
   };
 
