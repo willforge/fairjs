@@ -38,16 +38,23 @@
    radix43: 'ABCDEFGHiJKLMNoPQRSTUVWXYZ0123456789 -+.$%*',
    base58: '.123456789ABCDEFGH.JKLMN.PQRSTUVWXYZabcdefghijk.mnopqrstuvwxyz'.replace(/\./g,''), // ![0IOl]
    base62: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+   base63: '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
    base64m: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=', // RFC 2045
    base64u: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_=', // Base64 URL
    uudencode: '!"#$%&'+"'"+'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_', 
    binhex4: '!"#$%&'+"'"+'()*+,-012345689@ABCDEFGHIJKLMNPQRSTUVXYZ[`abcdefhijklmpqr', // HQX 
    B64: './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
    bash64: '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@_',
+   base85: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'+'!#$%&()*+-;<=>?@^_`{|}~',
    radix94: '-0123456789'+ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'+
                            'abcdefghijklmnopqrstuvwxyz'+
             "+.@$%_,~`'=;!^[]{}()#&" + '<>:"/\\|?*'
    } 
+   var aliases = {
+    'ilo0': '11zz',
+    '01v2': 'olwz',
+    '0189': 'OIBq'
+   }
    console.log(BASES);
    BaseN.BASES = BASES;
 
@@ -113,7 +120,7 @@
       }
     }
     i = 0;
-    /* wrong ? ... */
+    /* wrong ! ... */
     while (buffer[i] === 0 && i < buffer.length - 1) {
       digits.push(0);
       i++;
@@ -144,7 +151,9 @@ function a2s(buf,s) { /* Uint8Array to Hex */
     console.log('N:',N)
     bytes = [0];
     weights = [0];
+
     for (i = 0;i < string.length; i++) {
+       c = string[string.length -1 - i]; // consume string from the end
        c = string[i];
        if (!(c in map)) {
           throw "BaseN.decode received unacceptable input. Character '" + c + "' is not in the BaseN alphabet :"+ alphabet(base);

@@ -3,26 +3,39 @@
 input { width: 43em; }
 </style>
 <script src="BaseN.js" title="Inspired by [45678](https://github.com/45678/Base58)" ></script>
-<p><input name=mhash value=Qm1234 onchange="convert(event);">
-<p><span id=array><span></p>
-<p><span id=hex><span></p>
+<h3>Multibase Conversion</h3>
+<p>multihash: <p><input name=mhash value=Qm1234 onchange="convert(event);"><button onclick="clicked(event);">convert</button>
+<p>uInt8Array: <span id=array><span></p>
+<p>hex: <span id=hex><span></p>
 
 <div>
-<input name=base16 disabled>
-<br><input name=RFC4648 disabled>
+base16: <input name=base16 disabled>
+<br>base32: <input name=RFC4648 disabled> (don't work as it is not written as a stream encoder!)
+<br>base36: <input name=base36 disabled>
+<br>base58: <input name=base58 disabled>
+<br>base39: <input name=base39 disabled> (barcode)
+<br>base43: <input name=base43 disabled> (barcode w/ ' ')
 <!-- 
 <br><input name=radix32 disabled>
-<br><input name=base36 disabled>
-<br><input name=base39 disabled>
-<br><input name=base58 disabled>
 <br><input name=base64m disabled>
-<br><br><input name=baseZ disabled>
 -->
+<br>base62: <input name=base62 disabled>
+<br>base63: <input name=base63 disabled>
+
+<br>base85: <input name=base85 disabled>
+<br><br>base94: <input name=baseZ disabled>
 </div>
 
 
 
 <script>
+function clicked(ev) {
+  let e = document.getElementsByName('mhash')[0]
+  console.log(ev)
+  ev.target.value = e.value;
+  convert(ev)
+  return ev;
+}
 function convert(ev) {
  let mhash = ev.target.value;
  console.log('mhash:',mhash)
@@ -38,14 +51,14 @@ function convert(ev) {
      arr = BaseN.decode(mhash.slice(1),58);
      console.log('arr:',arr);
     break;
-   case (code == 'f'):
-     arr = BaseN.decode(mhash.slice(1),'base16');
+   case (code == 'f' || code == 'F'):
+     arr = BaseN.decode(mhash.slice(1).toLowerCase(),'base16');
     break
-   case (code == 'b'):
-     arr = BaseN.decode(mhash.slice(1),'RFC4648');
+   case (code == 'b' || code == 'B'):
+     arr = BaseN.decode(mhash.slice(1).toUpperCase(),'RFC4648');
     break
-   case (code == 'k'):
-    arr = BaseN.decode(mhash.slice(1),36);
+   case (code == 'k' || code == 'K'):
+    arr = BaseN.decode(mhash.slice(1).toLowerCase(),36);
     break
    default:
     arr = BaseN.decode(mhash.slice(1),BaseN.maxN);
@@ -81,7 +94,12 @@ function toHex(buf) { /* Uint8Array to Hex */
   return Array.prototype.map.call(buf, x => ('0' + x.toString(16)).slice(-2)).join('');
 }
 /* w/ pading ...
-function toHex(buffer) {
-  return Array.prototype.map.call(buffer, x => x.toString(16).padStart(2, '0')).join('');
-} */
+function toHex(buf) {
+  return Array.prototype.map.call(buf, x => x.toString(16).padStart(2, '0')).join('');
+} 
+
+function toHexA(buf,c) {
+    return Array.prototype.map.call(buf, x => 'x'+('0' + x.toString(16)).slice(-2)).join(c);
+}
+*/
 </script>
