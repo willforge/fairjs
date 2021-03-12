@@ -176,7 +176,7 @@ function replacePeerIdInForm(id) {
 function getNid(string) {
   let [callee, caller] = functionNameJS();
   console.debug(callee+'.inputs:',{string})
-  let sha2 = sha256(string)
+  let sha2 = sha256(string) // return hex string
   console.debug(callee+'.sha2:',sha2)
   let ns36 = BigInt('0x'+sha2).toString(36).substr(0,13)
   console.debug(callee+'.ns36:',ns36)
@@ -627,7 +627,7 @@ function ipfsPinAdd(hash) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.inputs:',{hash});
 
-    let url = api_url + 'pin/add?arg=/ipfs/'+hash+'&progress=true'
+    let url = api_url + 'pin/add?arg=/ipfs/'+hash+'&progress=false'
     return fetchGetPostJson(url)
 	.then(json => { console.debug(callee+'.json',json); return json })
 	.catch(err => console.error(err, hash))
@@ -646,19 +646,52 @@ function ipfsPinRm(hash) {
 	.catch(err => console.error(err, hash))
 }
 
+function toCid32(hash) { // TODO
+  let bin;
+  switch(true) {
+  case (hash.match(/^Qm/) ):
+      cidheader = hex2bin('0170');
+      bin = decode_base58(hash); break;
+  case (hash.match(/^z/) ):
+      let mhash = decode_base58(hash.slice(1));
+      cidheader = mhash.substr(0,2);
+      bin = mhash.substr(2);
+      break;
+  default:
+      console.warn(callee+'.default.unknow.hash:', hash)
+      cidheader = null;
+      bin = null;
+  }
+
+  let cid32 = encode_base32(cidheade + bin);
+  return cid32;
+}
+
 function getPinStatus(hash) { // getdata
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.inputs:',{hash});
-
-    let  url = api_url + 'pin/ls?arg=/ipfs/'+hash+'&type=all'
+    let mhash
+    if (hash.slice(0,1) === 'z') {
+       mhash = BaseN.decode(hash.slice(1),'base58');
+    } else { 
+       mhash = BaseN.decode(hash,'base58');
+    }
+    console.debug(callee+'.mhash:',mhash);
+    let b32 = Base32.encode(mhash);
+    console.debug(callee+'.b32:',b32);
+    let bafy = 'b'+ Base32.stringify(mhash);
+    console.debug(callee+'.bafy:',bafy);
+    let  url = api_url + 'pin/ls?arg=/ipfs/'+hash+'&type=all&cid-base=base58btc'
     return fetchRespNoCatch(url)
 	.then( obj => {
 	    let status;
-	    if (typeof(obj.Code) == 'undefined') {
-		status = obj.Keys[hash].Type
-	    } else {
-		status = 'unpinned'
-	    }
+      if (typeof(obj.Code) == 'undefined') {
+      console.debug(callee+'.pinned.obj:',obj);
+      status = obj.Keys[hash].Type
+      } else {
+      // console.debug(callee+'.unpinned.obj:',obj);
+      status = 'unpinned'
+      }
 	    console.debug(callee+': '+hash+" \u21A6",status);
 	    return Promise.resolve(status)
 	})
