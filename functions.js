@@ -132,14 +132,14 @@ async function create_root_nolog() {
   /* create new root */
   console.info(callee+'.info: create root');
   let emptyd = await ipfsMkdir();
-  // grab existing root if exist (assumed peerid is globally avaible)
+  // grab existing root if exist (assumed peerid is globally available)
   let root_path = await ipfsNameResolve(peerid);
   let qmroot = root_path.replace('/ipfs/','');
   console.info(callee+'.qmroot:', qmroot);
 
   // remove /...
   let qm = qmroot;
-  if (await ipfsExists('/...',qmroot)[0]) { qm = await ipfsRemove('/...',qmroot); }
+  if (await ipfsExists('/...',qmroot)[0]) { qm = await ipfsRemove('/...',qmroot); } else { qm = qmroot }
   if (await ipfsExists('/my',qm)[0]) { qm = await ipfsRemove('/my',qm); }
   if (await ipfsExists('/public',qm)[0]) { qm = await ipfsRemove('/public',qm); }
   if (await ipfsExists('/etc',qm)[0]) { qm = await ipfsRemove('/etc',qm); }
