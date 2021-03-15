@@ -135,7 +135,7 @@ function a2s(buf,s) { /* Uint8Array to Hex */
 }
 
   BaseN.decode = function(string, base) {
-    let v = 1;
+    let v = 0;
     var bytes, c, carry, j;
     if (string.length === 0) {
       return new (typeof Uint8Array !== "undefined" && Uint8Array !== null ? Uint8Array : Buffer)(0);
