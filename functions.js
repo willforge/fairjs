@@ -139,17 +139,22 @@ async function create_root_nolog() {
 
   // remove /...
   let qm = qmroot;
-  if (await ipfsExists('/...',qmroot)[0]) { qm = await ipfsRemove('/...',qmroot); } else { qm = qmroot }
+  if (await ipfsExists('/...',qmroot)[0]) { qm = await ipfsRemove('/...',qmroot); }
   if (await ipfsExists('/my',qm)[0]) { qm = await ipfsRemove('/my',qm); }
   if (await ipfsExists('/public',qm)[0]) { qm = await ipfsRemove('/public',qm); }
   if (await ipfsExists('/etc',qm)[0]) { qm = await ipfsRemove('/etc',qm); }
   //console.debug(callee+'.qm:',qm);
   
   // add /...
-  qm = await ipfsCopy('/.../published/...',qm); // recover last published "/..." from mfs
-  console.info(callee+'.qm:(w previous ...):', qm);
-       await ipfsRemove('published',qm+'/...'); // remove previously published if one existed
-  console.info(callee+'.qm:(w/o published):', qm);
+  if (await mfsExists('/.../published/...')[0]) {
+     let qmtemp = await ipfsCopy('/.../published/...',qm); // recover last published "/..." from mfs
+     if (typeof(qmtemp) != 'undefined' && qmtemp != null) {
+        qm = qmtemp;
+        console.info(callee+'.qm:(w previous ...):', qm);
+        qm = await ipfsRemove('published',qm+'/...'); // remove previously published if one existed
+        console.info(callee+'.qm:(w/o published):', qm);
+     }
+  }
 
   //console.debug(callee+'.qm:',qm);
   qm = await ipfsCopy('/my',qm);

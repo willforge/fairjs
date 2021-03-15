@@ -1005,23 +1005,33 @@ function ipfsRemove(name,hash) {
    var url = api_url + 'object/patch/rm-link?arg='+hash+'&arg='+name
      return fetch(url,{method:'POST'})
      .then( resp => resp.json() )
-     .then( json => { return json.Hash; })
+     .then( json => {
+       if (typeof(json.code) == 'undefined' ) {
+          return json.Hash;
+       } else {
+          console.warn(callee+'.error: ! -e %s in qm: ',name,hash); // testing one %s !
+          return hash;
+       }
+     })
    .catch(logError)
    
 }
 async function ipfsCopy(mfspath,hash) {
    let [callee, caller] = functionNameJS(); // logInfo("message !")
-   let link = await getMFSFileHash(mfspath);
+   let [doesExist,link] = await mfsExists(mfspath);
    //console.log(callee+'.link:',link);
    let name = basename(mfspath);
    //console.log(callee+'.name:',name);
-   if (link != qmNull) {
+   if (doesExist) {
      var url = api_url + 'object/patch/add-link?arg='+hash+'&arg='+name+'&arg='+link;
      console.log(callee+'.url:',url);
      return fetch(url,{method:'POST'})
      .then( resp => resp.json() )
      .then( json => { return json.Hash; })
    .catch(logError)
+   } else {
+     console.warn(callee+".mfspath: %s doesn't exist; link: %s",mfspath,link);
+     return hash;
    }
 }
 
