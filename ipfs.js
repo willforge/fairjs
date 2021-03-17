@@ -394,17 +394,6 @@ function ipfsAddRawContent(string) {
 	.catch(console.erroror)
 }
 
-function ipfsAddBinaryContent(string) {
-    let [callee, caller] = functionNameJS(); // logInfo("message !")
-    console.debug(callee+'.inputs:',{string});
-    
-    url = api_url + 'add?file=content.dat&cid-version=0'
-    return fetchPostBinary(url,string)
-	.then( resp => resp.json() )
-	.then( json => json.Hash )
-	.catch(console.erroror)
-}
-
 function ipfsAddBinaryFile(file) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.inputs:',{file});
