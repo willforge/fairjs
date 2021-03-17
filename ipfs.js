@@ -152,7 +152,7 @@ if (typeof(peerid) == 'undefined') {
 	    console.debug('main.s:',s);
 	    replaceInTagsByClassName('shortid',s)
 	})
-	.catch(logError);
+	.catch(console.erroror);
 
 }
 
@@ -269,33 +269,6 @@ async function ipfsPublish(pubpath) {
     return ppath;
 }
 
-function ipfsGetKeyByName(symb) {
-    let [callee, caller] = functionNameJS(); // logInfo("message !")
-    console.debug(callee+'.inputs:',{symb});
-    var url = api_url + 'key/list?l=true&ipns-base=b58mh'
-    return fetchGetPostJson(url)
-	.then( json => {
-      let key_obj = json.Keys.find( e => e.Name == symb )
-      console.debug(callee+'.key_obj:',key_obj)
-      return key_obj.Id
-       
-     })
-	.catch(logError)
-}
-
-function ipfsGetKeyByName(symb) {
-    let [callee, caller] = functionNameJS(); // logInfo("message !")
-    console.debug(callee+'.inputs:',{symb});
-    var url = api_url + 'key/list?l=true&ipns-base=b58mh'
-    return fetchGetPostJson(url)
-	.then( json => {
-      let key_obj = json.Keys.find( e => e.Name == symb )
-      console.debug(callee+'.key_obj:',key_obj)
-      return key_obj.Id
-
-     })
-	.catch(logError)
-}
 
 function ipfsGetKeyByName(symb) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
@@ -308,7 +281,7 @@ function ipfsGetKeyByName(symb) {
       return key_obj.Id
        
      })
-	.catch(logError)
+	.catch(console.erroror)
 }
 
 function ipfsNamePublish(k,v) {
@@ -399,7 +372,7 @@ function ipfsAddToken(string) {
     return fetchPostText(url,string)
   	.then( resp => resp.json() )
   	.then( json => json.Hash )
-	  .catch(logError)
+	  .catch(console.erroror)
 }
 function ipfsAddBinaryContent(string) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
@@ -409,7 +382,7 @@ function ipfsAddBinaryContent(string) {
     return fetchPostBinary(url,string)
 	.then( resp => resp.json() )
 	.then( json => json.Hash )
-	.catch(logError)
+	.catch(console.erroror)
 }
 function ipfsAddRawContent(string) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
@@ -418,7 +391,7 @@ function ipfsAddRawContent(string) {
     return fetchPostBinary(url,string)
 	.then( resp => resp.json() )
 	.then( json => json.Hash )
-	.catch(logError)
+	.catch(console.erroror)
 }
 
 function ipfsAddBinaryContent(string) {
@@ -429,7 +402,7 @@ function ipfsAddBinaryContent(string) {
     return fetchPostBinary(url,string)
 	.then( resp => resp.json() )
 	.then( json => json.Hash )
-	.catch(logError)
+	.catch(console.erroror)
 }
 
 function ipfsAddBinaryFile(file) {
@@ -442,9 +415,9 @@ function ipfsAddBinaryFile(file) {
 	    return fetchPostBinary(url,buf)
 		.then( resp => resp.json() )
 		.then( json => json.Hash )
-		.catch(logError)
+		.catch(console.erroror)
 	})
-	.catch(logError)
+	.catch(console.erroror)
 }
 function ipfsAddTextContent(string) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
@@ -454,7 +427,7 @@ function ipfsAddTextContent(string) {
     return fetchPostText(url,string)
 	.then( resp => resp.json() )
 	.then( json => json.Hash )
-	.catch(logError)
+	.catch(console.erroror)
 }
 
 function ipfsAddTextFile(file) {
@@ -470,9 +443,9 @@ function ipfsAddTextFile(file) {
 	    return fetchPostText(url,buf)
 		.then( resp => resp.json() )
 		.then( json => json.Hash )
-		.catch(logError)
+		.catch(console.erroror)
 	})
-	.catch(logError)
+	.catch(console.erroror)
 }
 
 function getJsonByMFSPath(path) {
@@ -575,7 +548,7 @@ function ipfsPostHashByObject(obj) {
 	.then( resp => resp.json() )
 	.then( json => { console.warn(callee+'.json:',callee+'.json:',json); return json; })
 	.then( json => json.Hash )
-	.catch(logError)
+	.catch(console.erroror)
 }
 
 
@@ -609,7 +582,7 @@ function ipnsGetContentByKey(key) {
       return obj
     }
    })
-  .catch(logError)
+  .catch(console.erroror)
 
 }
 
@@ -620,7 +593,7 @@ function ipfsLsofPath(ipfspath) {
     console.debug(callee+'.url: '+url);
     return fetchGetPostJson(url)
 	.then( json => { console.log(callee+'.json:',json); return json.Objects[0]; })
-  .catch(logError)
+  .catch(console.erroror)
 }
 
 function ipfsPinAdd(hash) {
@@ -695,7 +668,7 @@ function getPinStatus(hash) { // getdata
 	    console.debug(callee+': '+hash+" \u21A6",status);
 	    return Promise.resolve(status)
 	})
-	.catch( obj => { logError('getPinStatus.catch',obj) })
+	.catch( obj => { console.erroror('getPinStatus.catch',obj) })
 }
 
 function ipfsRmMFSFileUnless06(mfspath) {
@@ -712,7 +685,7 @@ function ipfsRmMFSFileUnless06(mfspath) {
 		if (resp.ok) { return resp.text(); }
 		else { return resp.json(); }
 	    })
-	    .catch(logError)
+	    .catch(console.erroror)
     }
 }
 
@@ -726,7 +699,7 @@ function ipfsRmMFSFile(mfspath) {
 	    if (resp.ok) { return resp.text(); }
 	    else { return resp.json(); }
 	})
-	.catch(logError)
+	.catch(console.erroror)
 }
 
 function ipfsCpMFSFile(target,source) {
@@ -740,7 +713,7 @@ function ipfsCpMFSFile(target,source) {
 	    if (resp.ok) { return resp.text(); }
 	    else { return resp.json(); }
 	})
-	.catch(logError)
+	.catch(console.erroror)
 
 }
 
@@ -756,7 +729,7 @@ function ipfsWriteContent(mfspath,buf) {
 	    var url = api_url + 'files/write?arg=' + mfspath + '&create=true&truncate=true';
 	    return fetchPostBinary(url, buf) // <--------- Binary !
 		.then( _ => getMFSFileHash(mfspath)) 
-		.catch(logError)
+		.catch(console.erroror)
 	})
 	.catch(console.warn)
 }
@@ -771,7 +744,7 @@ function ipfsWriteText(mfspath,buf) { // truncate doesn't work for version < 0.5
 	    var url = api_url + 'files/write?arg=' + mfspath + '&create=true&truncate=true';
 	    return fetchPostText(url, buf) // <--------
 		.then( _ => getMFSFileHash(mfspath)) 
-		.catch(logError)
+		.catch(console.erroror)
 	})
 	.catch(console.warn)
 }
@@ -829,7 +802,7 @@ function ipfsWriteBinary(mfspath,buf) { // truncate doesn't work for version < 0
 	    var url = api_url + 'files/write?arg=' + mfspath + '&create=true&truncate=true';
 	    return fetchPostBinary(url, buf)
 		.then( _ => getMFSFileHash(mfspath)) 
-		.catch(logError)
+		.catch(console.erroror)
 	})
 	.catch(console.warn)
 }
@@ -844,7 +817,7 @@ function ipfsWriteJson(mfspath,obj) {
 	    var url = api_url + 'files/write?arg=' + mfspath + '&create=true&truncate=true';
 	    return fetchPostJson(url, obj)
 		.then( _ => getMFSFileHash(mfspath)) 
-		.catch(logError)
+		.catch(console.erroror)
 	})
 	.catch(console.log)
 }
@@ -955,7 +928,7 @@ function createParent(path) {
               }
               })
         .then ( obj => { console.debug(callee+'.obj: ',obj); return obj })
-           .catch(logError)
+           .catch(console.erroror)
         } 
 	})
 	.catch(console.log)
@@ -1013,7 +986,7 @@ function ipfsRemove(name,hash) {
           return hash;
        }
      })
-   .catch(logError)
+   .catch(console.erroror)
    
 }
 async function ipfsCopy(mfspath,hash) {
@@ -1028,7 +1001,7 @@ async function ipfsCopy(mfspath,hash) {
      return fetch(url,{method:'POST'})
      .then( resp => resp.json() )
      .then( json => { return json.Hash; })
-   .catch(logError)
+   .catch(console.erroror)
    } else {
      console.warn(callee+".mfspath: %s doesn't exist; link: %s",mfspath,link);
      return hash;
@@ -1092,7 +1065,7 @@ function getMFSFileHash(mfspath) { // alias mfsGetHashByPath
             return json.Hash
             }
             })
-   .catch(logError)
+   .catch(console.erroror)
 }
 
 function fetchAPI(url) {
