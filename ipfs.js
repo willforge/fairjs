@@ -152,7 +152,7 @@ if (typeof(peerid) == 'undefined') {
 	    console.debug('main.s:',s);
 	    replaceInTagsByClassName('shortid',s)
 	})
-	.catch(console.erroror);
+	.catch(console.error);
 
 }
 
@@ -281,7 +281,7 @@ function ipfsGetKeyByName(symb) {
       return key_obj.Id
        
      })
-	.catch(console.erroror)
+	.catch(console.error)
 }
 
 function ipfsNamePublish(k,v) {
@@ -372,7 +372,7 @@ function ipfsAddToken(string) {
     return fetchPostText(url,string)
   	.then( resp => resp.json() )
   	.then( json => json.Hash )
-	  .catch(console.erroror)
+	  .catch(console.error)
 }
 function ipfsAddBinaryContent(string) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
@@ -382,7 +382,7 @@ function ipfsAddBinaryContent(string) {
     return fetchPostBinary(url,string)
 	.then( resp => resp.json() )
 	.then( json => json.Hash )
-	.catch(console.erroror)
+	.catch(console.error)
 }
 function ipfsAddRawContent(string) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
@@ -391,7 +391,7 @@ function ipfsAddRawContent(string) {
     return fetchPostBinary(url,string)
 	.then( resp => resp.json() )
 	.then( json => json.Hash )
-	.catch(console.erroror)
+	.catch(console.error)
 }
 
 function ipfsAddBinaryFile(file) {
@@ -404,9 +404,9 @@ function ipfsAddBinaryFile(file) {
 	    return fetchPostBinary(url,buf)
 		.then( resp => resp.json() )
 		.then( json => json.Hash )
-		.catch(console.erroror)
+		.catch(console.error)
 	})
-	.catch(console.erroror)
+	.catch(console.error)
 }
 function ipfsAddTextContent(string) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
@@ -416,7 +416,7 @@ function ipfsAddTextContent(string) {
     return fetchPostText(url,string)
 	.then( resp => resp.json() )
 	.then( json => json.Hash )
-	.catch(console.erroror)
+	.catch(console.error)
 }
 
 function ipfsAddTextFile(file) {
@@ -432,9 +432,9 @@ function ipfsAddTextFile(file) {
 	    return fetchPostText(url,buf)
 		.then( resp => resp.json() )
 		.then( json => json.Hash )
-		.catch(console.erroror)
+		.catch(console.error)
 	})
-	.catch(console.erroror)
+	.catch(console.error)
 }
 
 function getJsonByMFSPath(path) {
@@ -537,7 +537,7 @@ function ipfsPostHashByObject(obj) {
 	.then( resp => resp.json() )
 	.then( json => { console.warn(callee+'.json:',callee+'.json:',json); return json; })
 	.then( json => json.Hash )
-	.catch(console.erroror)
+	.catch(console.error)
 }
 
 
@@ -571,7 +571,7 @@ function ipnsGetContentByKey(key) {
       return obj
     }
    })
-  .catch(console.erroror)
+  .catch(console.error)
 
 }
 
@@ -582,7 +582,7 @@ function ipfsLsofPath(ipfspath) {
     console.debug(callee+'.url: '+url);
     return fetchGetPostJson(url)
 	.then( json => { console.log(callee+'.json:',json); return json.Objects[0]; })
-  .catch(console.erroror)
+  .catch(console.error)
 }
 
 function ipfsPinAdd(hash) {
@@ -657,7 +657,7 @@ function getPinStatus(hash) { // getdata
 	    console.debug(callee+': '+hash+" \u21A6",status);
 	    return Promise.resolve(status)
 	})
-	.catch( obj => { console.erroror('getPinStatus.catch',obj) })
+	.catch( obj => { console.error('getPinStatus.catch',obj) })
 }
 
 function ipfsRmMFSFileUnless06(mfspath) {
@@ -674,7 +674,7 @@ function ipfsRmMFSFileUnless06(mfspath) {
 		if (resp.ok) { return resp.text(); }
 		else { return resp.json(); }
 	    })
-	    .catch(console.erroror)
+	    .catch(console.error)
     }
 }
 
@@ -688,7 +688,7 @@ function ipfsRmMFSFile(mfspath) {
 	    if (resp.ok) { return resp.text(); }
 	    else { return resp.json(); }
 	})
-	.catch(console.erroror)
+	.catch(console.error)
 }
 
 function ipfsCpMFSFile(target,source) {
@@ -702,7 +702,7 @@ function ipfsCpMFSFile(target,source) {
 	    if (resp.ok) { return resp.text(); }
 	    else { return resp.json(); }
 	})
-	.catch(console.erroror)
+	.catch(console.error)
 
 }
 
@@ -718,7 +718,7 @@ function ipfsWriteContent(mfspath,buf) {
 	    var url = api_url + 'files/write?arg=' + mfspath + '&create=true&truncate=true';
 	    return fetchPostBinary(url, buf) // <--------- Binary !
 		.then( _ => getMFSFileHash(mfspath)) 
-		.catch(console.erroror)
+		.catch(console.error)
 	})
 	.catch(console.warn)
 }
@@ -733,7 +733,7 @@ function ipfsWriteText(mfspath,buf) { // truncate doesn't work for version < 0.5
 	    var url = api_url + 'files/write?arg=' + mfspath + '&create=true&truncate=true';
 	    return fetchPostText(url, buf) // <--------
 		.then( _ => getMFSFileHash(mfspath)) 
-		.catch(console.erroror)
+		.catch(console.error)
 	})
 	.catch(console.warn)
 }
@@ -791,7 +791,7 @@ function ipfsWriteBinary(mfspath,buf) { // truncate doesn't work for version < 0
 	    var url = api_url + 'files/write?arg=' + mfspath + '&create=true&truncate=true';
 	    return fetchPostBinary(url, buf)
 		.then( _ => getMFSFileHash(mfspath)) 
-		.catch(console.erroror)
+		.catch(console.error)
 	})
 	.catch(console.warn)
 }
@@ -806,7 +806,7 @@ function ipfsWriteJson(mfspath,obj) {
 	    var url = api_url + 'files/write?arg=' + mfspath + '&create=true&truncate=true';
 	    return fetchPostJson(url, obj)
 		.then( _ => getMFSFileHash(mfspath)) 
-		.catch(console.erroror)
+		.catch(console.error)
 	})
 	.catch(console.log)
 }
@@ -839,39 +839,50 @@ function ipfsLogAppend(mfspath,record) {
 
    // note is file doesn't exist then 
    return createParent(mfspath)
-      .then( _ => getMFSFileHash(mfspath)) 
-      .then( hash => { return isRawLeaf(hash); } )
-      .then( isRaw => {
-         if (!isRaw) {
-           console.info(callee+'.mfspath.isNotRaw:',mfspath);
-           return makeItRaw(mfspath);
-         } else {
-           console.info(callee+'.mfspath.isRaw:',mfspath);
-           return true;
-         }
-      })
-      .then( _ => getMFSFileSize(mfspath) )
-      .then( offset => {
-            console.debug(mfspath,': offset=',offset);
-            let url = api_url + 'files/write?arg=' + mfspath + '&raw-leaves=true&cid-base=base58btc&create=true&truncate=false&offset='+offset;
+      .then( _ => { return mfsExists(mfspath); })
+      .then( _ => { let [exists,hash] = _ ;
+         if (exists) {
+         return isRawLeaf(hash)
+         .then( isRaw => {
+               if (!isRaw) {
+               console.info(callee+'.mfspath.isNotRaw:',mfspath);
+               return makeItRaw(mfspath);
+               } else {
+               console.info(callee+'.mfspath.isRaw:',mfspath);
+               return true;
+               }
+               })
+         .then( _ => getMFSFileSize(mfspath) )
+         .then( offset => { // append file at given offset
+               console.debug(mfspath,': offset=',offset);
+               let url = api_url + 'files/write?arg=' + mfspath + '&raw-leaves=true&cid-base=base58btc&create=true&truncate=false&offset='+offset;
+               return fetchPostText(url, record) // /!\ no "\n" is inserted by default, please add your own if necessary !
+               .then( _ => getMFSFileHash(mfspath)) 
+               })
+         .catch(console.error)
+         } else { // create file ...
+            let url = api_url + 'files/write?arg=' + mfspath + '&raw-leaves=true&cid-base=base58btc&create=true&truncate=true';
             return fetchPostText(url, record) // /!\ no "\n" is inserted by default, please add your own if necessary !
-            .then( _ => getMFSFileHash(mfspath)) 
-            })
-   .catch(console.error)
+               .then( _ => getMFSFileHash(mfspath)) 
+               .catch(console.error)
+         }
+       })
+       .catch(console.error)
+
 }
 
 async function isRawLeaf(qm) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
    let url = api_url + 'dag/get?arg='+qm+'&data-encoding=base64';
    let dag = await fetchGetPostJson(url);
-   console.debug(callee+'.dag: %..."}',JSON.stringify(dag).substr(0,36));
+   console.debug(callee+'.dag: %s..."}',JSON.stringify(dag).substr(0,36));
    if (typeof(dag.data) == 'undefined') {
       console.debug(callee+'.dag.data (raw-leaf): undefined');
       return true; // is Raw
    } else {
       if (dag.links.length == 0) {
          console.debug(callee+'.dag.links.length (protobuf):',0);
-         return false; // no links == 1 protobuf chunk !
+         return false; // there is no links;
       }
       for (let link of dag.links) {
          console.debug(callee+'.link:',link);
@@ -917,7 +928,7 @@ function createParent(path) {
               }
               })
         .then ( obj => { console.debug(callee+'.obj: ',obj); return obj })
-           .catch(console.erroror)
+           .catch(console.error)
         } 
 	})
 	.catch(console.log)
@@ -975,7 +986,7 @@ function ipfsRemove(name,hash) {
           return hash;
        }
      })
-   .catch(console.erroror)
+   .catch(console.error)
    
 }
 async function ipfsCopy(mfspath,hash) {
@@ -990,7 +1001,7 @@ async function ipfsCopy(mfspath,hash) {
      return fetch(url,{method:'POST'})
      .then( resp => resp.json() )
      .then( json => { return json.Hash; })
-   .catch(console.erroror)
+   .catch(console.error)
    } else {
      console.warn(callee+".mfspath: %s doesn't exist; link: %s",mfspath,link);
      return hash;
@@ -1054,7 +1065,7 @@ function getMFSFileHash(mfspath) { // alias mfsGetHashByPath
             return json.Hash
             }
             })
-   .catch(console.erroror)
+   .catch(console.error)
 }
 
 function fetchAPI(url) {
