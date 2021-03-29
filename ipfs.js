@@ -299,7 +299,7 @@ function ipfsNameResolve(k,cb) {
     let promise = fetchGetPostJson(url)
     .then( json => {
       ipns_cache[k] = json.Path;
-      console.debug(callee+`.info: UPDATE ipns_cache[${k}]:`,ipns_cache[k]);
+      console.trace(callee+`.info: UPDATE ipns_cache[${k}]:`,ipns_cache[k]);
       if (typeof(cb) != 'undefined') { return cb(json.Path); }
       return json.Path
     })
@@ -664,17 +664,17 @@ function ipfsRmMFSFileUnless06(mfspath) {
     let [callee, caller] = functionNameJS(); // logInfo("message !")
     console.debug(callee+'.inputs:',{mfspath});
 
-    if (ipfsversion.substr(0,3) == '0.6') {
-	console.log('info: assumed truncates works !')
-	return Promise.resolve('noop');
+    if (typeof(ipfsversion) != 'undefined' && ipfsversion.substr(0,3) == '0.6') {
+       console.log('info: assumed truncates works !')
+          return Promise.resolve('noop');
     } else {
-	url = api_url + 'files/rm?arg='+mfspath
-	return fetch(url,{method:'POST'})
-	    .then( resp => {
-		if (resp.ok) { return resp.text(); }
-		else { return resp.json(); }
-	    })
-	    .catch(console.error)
+       url = api_url + 'files/rm?arg='+mfspath
+       return fetch(url,{method:'POST'})
+          .then( resp => {
+                if (resp.ok) { return resp.text(); }
+                else { return resp.json(); }
+          })
+       .catch(console.error)
     }
 }
 
