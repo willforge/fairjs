@@ -144,11 +144,11 @@ function a2s(buf,s) { /* Uint8Array to Hex */
     var ab = alphabet(base);
     var zero = ab[0]; // TODO : optimized alphabet+alphamap
     var one = ab.slice(-1);
-    console.log('zero: %s, one: %s',zero,one);
+    if (v) { console.log('zero: %s, one: %s',zero,one); }
     var map = alphamap(base);
-    console.log('decode.map:',map);
+    if (v) { console.log('decode.map:',map); }
     var N = Object.keys(map).length;
-    console.log('N:',N)
+    if (v) { console.log('N:',N) }
     bytes = [0];
     weights = [0];
 
@@ -198,7 +198,7 @@ function a2s(buf,s) { /* Uint8Array to Hex */
        }
 
     }
-    console.log('bytes: [%s]',a2s(bytes,','));
+    if (v) { console.log('bytes: [%s]',a2s(bytes,',')); }
     /*
           for(i = 0; string[i] === zero && i < string.length - 1; i++) {
           console.log('adding some zeros ... string[%s]=%s',i,string[i])
