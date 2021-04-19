@@ -2,6 +2,7 @@
 
 discover = {
  peers: findpeers,
+ join: join,
  brn_url: 'https://ipfs.blockringtm.ml/api/v0/',
  api_url: 'http://127.0.0.1:5001/api/v0/',
  gw_url: 'http://127.0.0.1:8080',
@@ -9,8 +10,6 @@ discover = {
  provs: [],
  callback: display_peers
 }
-
-var provs = [];
 
 function join() {
   return fetch(discover.api_url+'pin/add?arg='+discover.token, { method: 'POST' }).
@@ -28,7 +27,7 @@ function findpeers() {
 
 function get_peerids(objs) {
   discover.provs.push(...objs.filter( (o) => o.Type == 4 ));
-  if (provs.length > 0) {
+  if (discover.provs.length > 0) {
     let peerids = discover.provs.map((o) => o.Responses[0].ID );
     discover.callback(peerids);
     return peerids

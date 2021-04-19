@@ -204,6 +204,54 @@ function shortqm(qm) {
    }
 }
 
+
+function ipfsPeerConnect(peerid,layer) {
+    let [callee, caller] = functionNameJS(); // logInfo("message !")
+    var url = api_url + 'dht/findpeer?arg='+peerid;
+    return fetchGetPostText(url)
+     .then( text => {
+       //console.debug(callee+'.text:',text);
+       let ndjson = text.slice(0,-1).split('\n')
+       //console.debug(callee+'.ndjson:',ndjson);
+       let addr;
+       for (let record of ndjson) {
+         //console.debug(callee+'.record:',record);
+         let json = JSON.parse(record);
+         console.debug(callee+'.json:',json);
+         if (json.Type != 2) { continue; }
+         for (let addy of json.Responses[0].Addrs) {
+            if (addy.match(layer+'$') && addy.match('^/ip4/')
+                && ! addy.match('/ip4/127\.') && ! addy.match('/ip4/192\.') ) {
+              console.log(callee+'.addy:',addy);
+              addr = addy; break
+            }
+         }
+       }
+       if (typeof(addr) != 'undefined') {
+         url = api_url + 'swarm/connect?arg='+addr+'/p2p/'+peerid;
+         return fetch(url,{ method:'POST' })
+          .then( resp => resp.json() )
+          .then( obj => {
+                console.log(callee+'.obj:',obj);
+                if (obj.Strings[0].match('success')) {
+                console.log(callee+': SUCCESS');
+                return true;
+                } else {
+                console.log(callee+': ERROR');
+                return Promise.reject(false);
+                }
+                })
+          .catch(console.error);
+       } else {
+         console.error(callee+'.addr: undefined')
+       }
+
+     })
+    .catch(console.error);
+    
+    
+}
+
 function indexlogfilename(mutable) {
     let shard = getShard(mutable);
     let indexlogf = core.dir+'/shards/'+shard+'/'+core.index;
