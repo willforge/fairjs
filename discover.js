@@ -14,7 +14,7 @@ discover = {
 }
 
 function get_peerid() {
-  return fetch(discover.api_url+'config?arg=Identity.PeerID', { method: 'POST' }).
+  return fetch(discover.api_url+'config?arg=Identity.PeerID', { method: 'POST', mode: 'cors' }).
   then( resp => { console.log(resp); return resp.json(); }).
   then( obj => { console.info('peerid:',obj); return obj.Value; }).
   catch(console.error);
@@ -128,7 +128,7 @@ function display_peers(peers) {
    for (let i in peers) {
       let peer = peers[i];
       if (typeof(seen[peer]) != 'undefined') { continue; }
-      buf += `<li> <span id="peer${i}" data-p="${i}" onclick="connect(event);">🔾</span> <a href="${discover.gw_url}/ipns/${peer}">${peer}</a>`
+      buf += `<li> <span id="peer${i}" data-p="${i}" onclick="connect(event);">⬤</span> <a href="${discover.gw_url}/ipns/${peer}">${peer}</a>`
           + ` <a href=https://duckduckgo.com/?q=%2B%22${peer}%22>🔎</a>`
       if (discover.provs[i].Responses[0].Addrs) { seen[peer]++; }
    }
@@ -165,17 +165,17 @@ function connect(ev) {
     console.log('promises.then.status',status);
     console.log('promises.then.peer',peer);
     if (status) {
-      el.innerText = '🟢';
+      el.innerHTML = '&#128994'; // '🟢';
     } else {
-      el.innerText = '🔴';
+      el.innerHTML = '&#128308;'; // '🔴';
     }
     return status;
   }).catch(_=>{
-   el.innerText = '🔴';
+   el.innerHTML = '&#10060;'; // '❌';
    console.warn(_);
   });
   } else {
-   el.innerText = '🟠';
+   el.innerHTML = '&#128992;'; // '🟠';
   }
   
 }
